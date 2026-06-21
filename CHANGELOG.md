@@ -7,13 +7,6 @@
 
 ## [Unreleased]
 
-### Changed
-
-- `ISystem` 继承 `ICanInitialize`，获得 Initialize / Dispose 能力
-- `ContextBase` 系统生命周期管理：`RegisterSystem` 上下文已初始化时立即初始化系统，`GetSystem` 按需初始化，`Dispose` 逆序释放 System（先 System 后 Model）
-- 修正能力矩阵：IModel Dispose、ISystem Initialize / Dispose 列
-- 修正快速开始示例：`ExecuteQuery` 需要双类型参数 `<TQuery, TResult>`
-
 ### 规划中
 
 - ScriptableObject 可视化配置层
@@ -37,4 +30,9 @@
 - **Odin Inspector 集成**（可选） — `ObservablePropertyDrawer` 自定义 Inspector 绘制
 - **Roslyn Analyzer** — AESIR001 规则：引用类型使用 `ObservableProperty<T>` 时未实现 `IEquatable<T>` 编译警告
 - **单元测试** — Context / Container / ObservableProperty / LifeCycle 覆盖测试
-- **示例** — UI Counter（MVC）、UI Counter（MVP）、ObservableProperty Inspector 演示
+- **示例** — UI Counter（MVC）、UI Counter（MVP）、ObservableProperty（Odin Inspector）
+
+### Changed
+
+- `ISystem` 继承 `ICanInitialize`，获得 Initialize / Dispose 能力
+- `ContextBase` 系统生命周期管理：`RegisterSystem` 上下文已初始化时立即初始化系统，`GetSystem` 按需初始化，`Dispose` 逆序释放 System（先 System 后 Model）
