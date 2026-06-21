@@ -1,0 +1,31 @@
+# Unity generated
+/Library/
+/Temp/
+/Obj/
+/Build/
+/Builds/
+/Logs/
+/UserSettings/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Unity meta files for tilde-suffixed folders (not needed, Unity ignores these folders)
+# Samples~ and Documentation~ don't need .meta at the root level
+# but .meta files inside them are preserved for sample import GUIDs

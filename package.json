@@ -1,0 +1,39 @@
+{
+  "name": "cn.runestone.aesir.architecture",
+  "displayName": "Aesir Architecture",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "面向团结引擎 / Unity 的渐进式架构。以接口组合能力系统为核心，CQRS 读写分离 + 类型事件总线双通道驱动，PlayerLoop 原生生命周期管理，纯 C# 架构根与 MonoBehaviour 适配层分离。提供 MVC / MVP 双模式表现层，支持 Domain Reload 安全与测试隔离，基于 QFramework，融合 Odin Inspector，实现团结引擎 / Unity 可配置的架构。",
+  "keywords": [
+    "architecture",
+    "mvc",
+    "mvp",
+    "cqrs",
+    "unity"
+  ],
+  "author": {
+    "name": "Runestone.Yuumix",
+    "url": "https://github.com/yuumixcode"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "com.unity.test-framework": "1.1.33"
+  },
+  "samples": [
+    {
+      "displayName": "UI Counter (MVC)",
+      "description": "MVC 模式计数器示例。Controller 直接持有 Model 引用并驱动 UI 更新，适合快速原型开发。",
+      "path": "Samples~/UI-Counter-MVC"
+    },
+    {
+      "displayName": "UI Counter (MVP)",
+      "description": "MVP 模式计数器示例。Presenter 作为 Model 与 View 之间的中介，通过 ICounterView 接口隔离视图，适合中大型项目。",
+      "path": "Samples~/UI-Counter-MVP"
+    },
+    {
+      "displayName": "ObservableProperty Inspector",
+      "description": "ObservableProperty 自定义 Drawer 演示。展示简单类型（int/float/string/bool/Vector2）与复合可序列化类型（struct/class）在 Inspector 中的绘制效果。",
+      "path": "Samples~/ObservableProperty-Inspector"
+    }
+  ]
+}
