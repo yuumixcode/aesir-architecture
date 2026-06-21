@@ -31,9 +31,9 @@
       "path": "Samples~/UI-Counter-MVP"
     },
     {
-      "displayName": "ObservableProperty Inspector",
-      "description": "ObservableProperty 自定义 Drawer 演示。展示简单类型（int/float/string/bool/Vector2）与复合可序列化类型（struct/class）在 Inspector 中的绘制效果。",
-      "path": "Samples~/ObservableProperty-Inspector"
+      "displayName": "ObservableProperty (Odin Inspector)",
+      "description": "ObservableProperty 自定义 Drawer 演示，依赖 Odin Inspector。展示简单类型（int/float/string/bool/Vector2）与复合可序列化类型（struct/class）在 Inspector 中的绘制效果。",
+      "path": "Samples~/ObservableProperty"
     }
   ]
 }

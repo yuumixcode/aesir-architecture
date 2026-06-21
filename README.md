@@ -237,7 +237,7 @@ cn.runestone.aesir.architecture/
 ├── Samples~/
 │   ├── UI-Counter-MVC/       # MVC 模式计数器 Demo
 │   ├── UI-Counter-MVP/       # MVP 模式计数器 Demo
-│   └── ObservableProperty-Inspector/  # ObservableProperty Inspector 演示
+│   └── ObservableProperty/  # ObservableProperty Inspector 演示（Odin Inspector）
 └── Documentation~/
     └── aesir-architecture.md
 ```
