@@ -27,7 +27,7 @@
 - **Domain Reload 安全** — 静态变量通过 `[RuntimeInitializeOnLoadMethod]` 显式重置
 - **AesirArchitectureLog 统一日志** — 条件编译统一日志工具，禁止直接使用 `Debug.Log`
 - **MonoBehaviour 适配层** — `AbstractView<T>` 作为纯 C# 核心与 Unity 之间的适配
-- **Odin Inspector 集成**（可选） — `ObservablePropertyDrawer` 自定义 Inspector 绘制
+- **Odin Inspector 集成**（可选） — `ObservablePropertyAttributeProcessor` 属性注入
 - **Roslyn Analyzer** — AESIR001 规则：引用类型使用 `ObservableProperty<T>` 时未实现 `IEquatable<T>` 编译警告
 - **单元测试** — Context / Container / ObservableProperty / LifeCycle 覆盖测试
 - **示例** — UI Counter（MVC）、UI Counter（MVP）、ObservableProperty（Odin Inspector）
@@ -36,3 +36,4 @@
 
 - `ISystem` 继承 `ICanInitialize`，获得 Initialize / Dispose 能力
 - `ContextBase` 系统生命周期管理：`RegisterSystem` 上下文已初始化时立即初始化系统，`GetSystem` 按需初始化，`Dispose` 逆序释放 System（先 System 后 Model）
+- 移除 `ObservablePropertyDrawer`，Odin 集成仅保留 `ObservablePropertyAttributeProcessor` 属性注入
