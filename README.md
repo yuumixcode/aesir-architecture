@@ -3,7 +3,7 @@
 > 面向团结引擎 / Unity 的渐进式 MVP 架构框架，以 Unity 原生特性为一等公民。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](./CHANGELOG.md)
 [![Unity](https://img.shields.io/badge/Unity-2022.3%2B-black.svg)](https://unity.com/)
 
 ## 概述
@@ -16,7 +16,7 @@ AesirArchitecture（RAA）是一个以 **Unity 原生优先** 为核心理念的
 - **能力接口组合** — 通过 `ICanGetModel`、`ICanExecuteCommand`、`ICanSubscribeWithContext` 等能力标记接口组合出 `IModel` / `ISystem` / `IView` / `IController` / `IPresenter`，按需暴露能力
 - **CQRS 读写分离** — `ICommand` / `IAsyncCommand` 负责写操作，`IQuery<TResult>` / `IAsyncQuery<TResult>` 负责读操作，支持同步与异步
 - **ObservableProperty 响应式属性** — Model 持有可写实例，View 通过 `IReadOnlyObservableProperty<out T>` 协变只读访问，保障层级安全
-- **MiniEventHub 类型事件总线** — 按事件类型注册/发布，支持自动注销句柄（`IUnsubscribe`）与多种生命周期绑定（GameObject 销毁、场景卸载等）
+- **MiniEventBus 类型事件总线** — 按事件类型注册/发布，支持自动注销句柄与多种生命周期绑定（GameObject 销毁、场景卸载等）
 - **Domain Reload 安全** — 静态变量通过 `[RuntimeInitializeOnLoadMethod]` 显式重置，反复进出 Play Mode 无残留
 - **纯 C# 核心 + MonoBehaviour 适配** — 框架核心为纯 C# 对象，仅 `AbstractView<T>` 作为 MonoBehaviour 适配层
 - **MVC + MVP 双模式** — `IController` 适合快速开发，`IPresenter` 提供更严格的 Model-View 隔离
@@ -211,19 +211,19 @@ cn.runestone.aesir.architecture/
 ├── Runtime/
 │   ├── Runestone.AesirArchitecture.asmdef
 │   ├── Core/
-│   │   ├── Context/          # IContext, Context<T>, ContextBase, MockContext
+│   │   ├── Context/          # IContext, Context<T>, BaseContext, MockContext
 │   │   ├── Module/           # IModel, ISystem, IView, IController, IPresenter + Abstract 基类
 │   │   ├── Capabilities/      # ICan* 能力标记接口 + Extension 方法
 │   │   ├── AesirArchitecture.cs            # 架构入口静态类
 │   │   ├── AesirArchitectureLifeCycle.cs   # PlayerLoop 注入
 │   │   ├── AesirArchitectureLog.cs         # 统一日志
-│   │   ├── AssemblyInfo.cs                # InternalsVisibleTo 声明
+│   │   ├── AssemblyVisibleSettings.cs     # InternalsVisibleTo 声明
 │   │   ├── Container.cs                   # 模块容器
 │   │   └── SingletonMonoBehaviour.cs      # 单例 MonoBehaviour 基类
 │   ├── Command/              # ICommand, IAsyncCommand + Abstract 基类
 │   ├── Query/                # IQuery<TResult>, IAsyncQuery<TResult> + Abstract 基类
-│   ├── Event/                # MiniEventHub, MiniEvent<T>, IUnsubscribe + 生命周期绑定
-│   ├── Observer/             # ObservableProperty<T>, IReadOnlyObservableProperty<T>
+│   ├── Event/                # MiniEventBus, MiniEvent<T> + 生命周期绑定扩展
+│   ├── Observable/           # ObservableProperty<T>, IReadOnlyObservableProperty<T>
 │   └── Utilities/            # PlayerLoopUtility
 ├── Editor/
 │   ├── Runestone.AesirArchitecture.Editor.asmdef

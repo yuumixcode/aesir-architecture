@@ -9,6 +9,30 @@
 
 ### 规划中
 
+## [0.1.1] - 2026-06-24
+
+### Changed
+
+- **事件系统重构** — 移除 `ISubscribe` / `IUnsubscribe` 接口，简化事件系统设计，直接使用委托字段和扩展方法
+- **MiniEventHub → MiniEventBus** — 重命名并优化实现，提升 API 一致性
+- **ObservableProperty 目录调整** — 从 `Runtime/Observer/` 移至 `Runtime/Observable/`，更符合 C# 命名习惯
+- **ContextBase → BaseContext** — 重命名统一上下文基类命名规范
+- **AssemblyInfo → AssemblyVisibleSettings** — 重命名更准确描述文件用途
+
+### Added
+
+- **AbstractSystem** — 新增系统层标准基类，提供 `Initialize` / `Dispose` 生命周期管理
+- **代码样式指南** — 新增 `Documentation~/Rules/raa-code-style.md`，完整定义 RAA 代码规范
+- **事件系统设计文档** — 新增 `Documentation~/event-system-critique.md`，记录事件系统设计决策
+- **IUnsubscribe 移除决策文档** — 新增 `Documentation~/why-remove-iunsubscribe.md`，说明移除接口的思考过程
+- **Editor 端单元测试** — 将部分测试从 Runtime 移至 Editor，提升测试分类合理性
+- **UnityEngineObjectCheckNullTests** — 新增 Unity 对象空检查测试
+
+### Removed
+
+- **ISubscribe / IUnsubscribe 接口** — 简化事件系统，直接使用委托字段
+- **MiniEventHub** — 重构为 `MiniEventBus`
+
 - ScriptableObject 可视化配置层
 - SO EventChannel 事件通道
 - Editor 工具链（SO Inspector / MVP 脚手架 / 模块可视化）
