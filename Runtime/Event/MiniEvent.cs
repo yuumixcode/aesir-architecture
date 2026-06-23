@@ -5,18 +5,9 @@ namespace Runestone.AesirArchitecture
     /// <summary>
     /// 无参数简单事件，提供自动取消订阅的功能。
     /// </summary>
-    public sealed class MiniEvent : ISubscribe
+    public sealed class MiniEvent : IDisposable
     {
         Action _callbacks;
-
-        /// <summary>
-        /// 订阅事件，并返回可自动注销的订阅句柄
-        /// </summary>
-        public IUnsubscribe Subscribe(Action callback)
-        {
-            _callbacks += callback;
-            return new AutoUnsubscribeHandle(() => Unsubscribe(callback));
-        }
 
         /// <summary>
         /// 清空所有委托引用，释放内存
@@ -24,12 +15,12 @@ namespace Runestone.AesirArchitecture
         public void Dispose() => _callbacks = null;
 
         /// <summary>
-        /// 订阅事件并立刻调用事件一次，并返回可自动注销的订阅句柄
+        /// 订阅事件，并返回可自动注销的订阅句柄
         /// </summary>
-        public IUnsubscribe SubscribeAndInvoke(Action callback)
+        public AutoUnsubscribeHandle Subscribe(Action callback)
         {
-            callback?.Invoke();
-            return Subscribe(callback);
+            _callbacks += callback;
+            return new AutoUnsubscribeHandle(() => Unsubscribe(callback));
         }
 
         /// <summary>
@@ -46,7 +37,8 @@ namespace Runestone.AesirArchitecture
     /// <summary>
     /// 单参事件
     /// </summary>
-    public sealed class MiniEvent<T> : ISubscribe where T : IEventArgs
+    /// <typeparam name="T">事件参数类型</typeparam>
+    public sealed class MiniEvent<T> : IDisposable
     {
         Action<T> _callbacks;
 
@@ -55,36 +47,13 @@ namespace Runestone.AesirArchitecture
         /// </summary>
         public void Dispose() => _callbacks = null;
 
-        IUnsubscribe ISubscribe.Subscribe(Action callback)
-        {
-            return Subscribe(Wrapper);
-
-            void Wrapper(T value)
-            {
-                callback();
-            }
-        }
-
         /// <summary>
         /// 注册监听，返回可自动注销的订阅句柄
         /// </summary>
-        public IUnsubscribe Subscribe(Action<T> onEvent)
+        public AutoUnsubscribeHandle Subscribe(Action<T> onEvent)
         {
             _callbacks += onEvent;
             return new AutoUnsubscribeHandle(() => Unsubscribe(onEvent));
-        }
-
-        /// <summary>
-        /// 订阅事件并立即使用指定参数调用一次回调，返回可自动注销的订阅句柄
-        /// </summary>
-        public IUnsubscribe SubscribeAndInvoke(Action<T> onEvent, T eventArgs)
-        {
-            if (eventArgs != null)
-            {
-                onEvent?.Invoke(eventArgs);
-            }
-
-            return Subscribe(onEvent);
         }
 
         /// <summary>

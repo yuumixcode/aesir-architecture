@@ -10,7 +10,7 @@ namespace Runestone.AesirArchitecture.Samples
     {
         readonly ICounterView _view;
         readonly ICounterModel _model;
-        IUnsubscribe _countSubscription;
+        AutoUnsubscribeHandle _countSubscription;
 
         public CounterPresenter(ICounterView view)
         {
@@ -54,8 +54,7 @@ namespace Runestone.AesirArchitecture.Samples
             _view.DecreaseClicked -= HandleDecrease;
             _view.ResetClicked -= HandleReset;
 
-            _countSubscription?.Dispose();
-            _countSubscription = null;
+            _countSubscription.Dispose();
         }
     }
 }

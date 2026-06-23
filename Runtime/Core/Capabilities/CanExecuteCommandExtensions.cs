@@ -29,7 +29,8 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 异步执行无参命令
         /// </summary>
-        public static async Task ExecuteCommandAsync<T>(this ICanExecuteCommand self) where T : IAsyncCommand, new()
+        public static async Task ExecuteCommandAsync<T>(this ICanExecuteCommand self)
+            where T : IAsyncCommand, new()
         {
             var command = new T();
             command.SetContext(self.GetContext());
@@ -39,7 +40,8 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 异步执行命令
         /// </summary>
-        public static async Task ExecuteCommandAsync<T>(this ICanExecuteCommand self, T command) where T : IAsyncCommand
+        public static async Task ExecuteCommandAsync<T>(this ICanExecuteCommand self, T command)
+            where T : IAsyncCommand
         {
             command.SetContext(self.GetContext());
             await command.ExecuteAsync();

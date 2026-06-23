@@ -14,7 +14,7 @@ namespace Runestone.AesirArchitecture
     /// 实例级逻辑由 <see cref="ContextBase" /> 提供，本类仅负责单例管理与域重置。
     /// </para>
     /// </summary>
-    public abstract class Context<T> : ContextBase where T : Context<T>, new()
+    public abstract class Context<T> : BaseContext where T : Context<T>, new()
     {
         static T _context;
 

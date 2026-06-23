@@ -14,7 +14,7 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 订阅值变更。回调参数为新值。
         /// </summary>
-        IUnsubscribe Subscribe(Action<T> callback);
+        AutoUnsubscribeHandle Subscribe(Action<T> callback);
 
         /// <summary>
         /// 取消订阅值变更。
@@ -24,13 +24,11 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 订阅并立即触发一次当前值，用于初始化时同步订阅方状态。
         /// </summary>
-        IUnsubscribe SubscribeAndInvoke(Action<T> callback);
+        AutoUnsubscribeHandle SubscribeAndInvoke(Action<T> callback);
 
         /// <summary>
         /// 触发值变更通知，用于强制刷新订阅方状态。
         /// </summary>
         void Invoke();
-
-        
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using UnityEngine;
 
 namespace Runestone.AesirArchitecture
@@ -18,10 +17,15 @@ namespace Runestone.AesirArchitecture
         /// </summary>
         public const string PrivateValueFieldName = nameof(value);
 
+        /// <summary>
+        /// 触发通知方法名称，等同于提供 nameof(Invoke) 给外界。
+        /// </summary>
+        public const string InvokeMethodName = nameof(Invoke);
+
         [SerializeField]
         T value;
 
-        Action<T> _onValueChanged;
+        readonly MiniEvent<T> _changedEvent = new MiniEvent<T>();
 
         public ObservableProperty() { }
 
@@ -38,7 +42,7 @@ namespace Runestone.AesirArchitecture
                 }
 
                 this.value = value;
-                _onValueChanged?.Invoke(value);
+                _changedEvent.Invoke(value);
             }
         }
 
@@ -66,25 +70,21 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 订阅值变更。回调参数为新值。
         /// </summary>
-        public IUnsubscribe Subscribe(Action<T> callback)
-        {
-            _onValueChanged += callback;
-            return new AutoUnsubscribeHandle(() => Unsubscribe(callback));
-        }
+        public AutoUnsubscribeHandle Subscribe(Action<T> callback) => _changedEvent.Subscribe(callback);
 
         /// <summary>
         /// 取消订阅值变更。
         /// </summary>
-        public void Unsubscribe(Action<T> callback) => _onValueChanged -= callback;
+        public void Unsubscribe(Action<T> callback) => _changedEvent.Unsubscribe(callback);
 
         /// <summary>
         /// 订阅并立即触发一次当前值，用于初始化时同步订阅方状态。
         /// </summary>
-        public IUnsubscribe SubscribeAndInvoke(Action<T> callback)
+        public AutoUnsubscribeHandle SubscribeAndInvoke(Action<T> callback)
         {
-            var handler = Subscribe(callback);
+            var handle = Subscribe(callback);
             callback?.Invoke(value);
-            return handler;
+            return handle;
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Runestone.AesirArchitecture
         /// </summary>
         public void Invoke()
         {
-            _onValueChanged?.Invoke(value);
+            _changedEvent.Invoke(value);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Runestone.AesirArchitecture
         public void Modify(Action<T> modifier)
         {
             modifier.Invoke(value);
-            _onValueChanged?.Invoke(value);
+            _changedEvent.Invoke(value);
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Runestone.AesirArchitecture
         /// </summary>
         public void Clear()
         {
-            _onValueChanged = null;
+            _changedEvent.Dispose();
         }
     }
 }

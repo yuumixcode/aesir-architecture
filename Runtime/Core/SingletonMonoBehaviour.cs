@@ -52,7 +52,7 @@ namespace Runestone.AesirArchitecture
 
         void OnDestroy()
         {
-            OnDestroyInternal();
+            OnDestroyBefore();
 
             if (_instance == this)
             {
@@ -68,7 +68,7 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 单例销毁时调用，子类可覆写以执行自定义清理
         /// </summary>
-        protected virtual void OnDestroyInternal() { }
+        protected virtual void OnDestroyBefore() { }
 
         /// <summary>
         /// 获取单例 GameObject 的显示名称，子类可覆写自定义命名。

@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Runestone.AesirArchitecture.Tests
+namespace Runestone.AesirArchitecture.Tests.Editor
 {
     public class ContainerTests
     {
@@ -64,7 +64,7 @@ namespace Runestone.AesirArchitecture.Tests
             _container.Register<ITestService2>(new TestService2());
 
             var instances = _container.GetAll();
-            int count = 0;
+            var count = 0;
             foreach (var _ in instances)
             {
                 count++;
@@ -91,9 +91,19 @@ namespace Runestone.AesirArchitecture.Tests
         }
 
         interface ITestServiceBase { }
-        interface ITestService : ITestServiceBase { string Name { get; set; } }
+
+        interface ITestService : ITestServiceBase
+        {
+            string Name { get; set; }
+        }
+
         interface ITestService2 : ITestServiceBase { }
-        class TestService : ITestService { public string Name { get; set; } }
+
+        class TestService : ITestService
+        {
+            public string Name { get; set; }
+        }
+
         class TestService2 : ITestService2 { }
     }
 }

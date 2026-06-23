@@ -3,17 +3,17 @@ using System.Collections.Generic;
 namespace Runestone.AesirArchitecture
 {
     /// <summary>
-    /// 订阅句柄集合。管理 <see cref="IUnsubscribe" /> 句柄的添加与批量注销，
+    /// 订阅句柄集合。管理 <see cref="AutoUnsubscribeHandle" /> 句柄的添加与批量注销，
     /// 供 <see cref="UnsubscribeInvoker" /> 和 <see cref="UnsubscribeOnSceneUnloadedInvoker" /> 复用。
     /// </summary>
     public sealed class UnsubscribeHandleCollection
     {
-        readonly List<IUnsubscribe> _handles = new List<IUnsubscribe>();
+        readonly List<AutoUnsubscribeHandle> _handles = new List<AutoUnsubscribeHandle>();
 
         /// <summary>
         /// 添加订阅句柄，使其在调用条件满足时自动注销
         /// </summary>
-        public IUnsubscribe Add(IUnsubscribe handle)
+        public AutoUnsubscribeHandle Add(AutoUnsubscribeHandle handle)
         {
             _handles.Add(handle);
             return handle;

@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
 
-namespace Runestone.AesirArchitecture.Tests
+namespace Runestone.AesirArchitecture.Tests.Editor
 {
     public class ObservablePropertyTests
     {
@@ -25,7 +25,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void Value_Set_DifferentValue_TriggersCallback()
         {
             var prop = new ObservableProperty<int>(10);
-            int received = -1;
+            var received = -1;
             prop.Subscribe(v => received = v);
 
             prop.Value = 20;
@@ -39,7 +39,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void Value_Set_SameValue_DoesNotTriggerCallback()
         {
             var prop = new ObservableProperty<int>(5);
-            int callCount = 0;
+            var callCount = 0;
             prop.Subscribe(_ => callCount++);
 
             prop.Value = 5;
@@ -52,7 +52,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void SetValue_EquivalentToValueSetter()
         {
             var prop = new ObservableProperty<int>(1);
-            int received = -1;
+            var received = -1;
             prop.Subscribe(v => received = v);
 
             prop.SetValue(42);
@@ -66,7 +66,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void SetValueSilently_DoesNotTriggerCallback()
         {
             var prop = new ObservableProperty<int>(1);
-            int callCount = 0;
+            var callCount = 0;
             prop.Subscribe(_ => callCount++);
 
             prop.SetValueSilently(99);
@@ -119,7 +119,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void Unsubscribe_RemovesCallback()
         {
             var prop = new ObservableProperty<int>(0);
-            int callCount = 0;
+            var callCount = 0;
             Action<int> cb = _ => callCount++;
             prop.Subscribe(cb);
 
@@ -137,7 +137,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void Subscribe_ReturnsHandle_DisposeRemovesCallback()
         {
             var prop = new ObservableProperty<int>(0);
-            int callCount = 0;
+            var callCount = 0;
             var handle = prop.Subscribe(_ => callCount++);
 
             prop.Value = 1;
@@ -154,7 +154,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void SubscribeHandle_Dispose_CalledMultipleTimes_IsSafe()
         {
             var prop = new ObservableProperty<int>(0);
-            int callCount = 0;
+            var callCount = 0;
             var handle = prop.Subscribe(_ => callCount++);
 
             handle.Dispose();
@@ -170,7 +170,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void SubscribeAndInvoke_SubscribesAndImmediatelyTriggers()
         {
             var prop = new ObservableProperty<int>(50);
-            int received = -1;
+            var received = -1;
 
             prop.SubscribeAndInvoke(v => received = v);
 
@@ -185,7 +185,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void Modify_MutatesValueAndTriggersNotification()
         {
             var prop = new ObservableProperty<TestData>(new TestData { Value = 1 });
-            int received = -1;
+            var received = -1;
             prop.Subscribe(v => received = v.Value);
 
             prop.Modify(data => data.Value = 5);
@@ -199,7 +199,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void Modify_TriggersEvenIfValueContentUnchanged()
         {
             var prop = new ObservableProperty<TestData>(new TestData { Value = 1 });
-            int callCount = 0;
+            var callCount = 0;
             prop.Subscribe(_ => callCount++);
 
             prop.Modify(data => { });
@@ -212,7 +212,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void Clear_RemovesAllSubscriptions()
         {
             var prop = new ObservableProperty<int>(0);
-            int callCount = 0;
+            var callCount = 0;
             prop.Subscribe(_ => callCount++);
             prop.Subscribe(_ => callCount++);
 
@@ -243,7 +243,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void Subscribe_AfterUnsubscribe_CanResubscribe()
         {
             var prop = new ObservableProperty<int>(0);
-            int callCount = 0;
+            var callCount = 0;
             Action<int> cb = _ => callCount++;
 
             prop.Subscribe(cb);
@@ -259,7 +259,7 @@ namespace Runestone.AesirArchitecture.Tests
         public void Value_Set_ReferenceType_DifferentReference_TriggersCallback()
         {
             var prop = new ObservableProperty<string>("a");
-            int callCount = 0;
+            var callCount = 0;
             prop.Subscribe(_ => callCount++);
 
             prop.Value = "b";
@@ -273,7 +273,7 @@ namespace Runestone.AesirArchitecture.Tests
         {
             var obj = new TestData { Value = 1 };
             var prop = new ObservableProperty<TestData>(obj);
-            int callCount = 0;
+            var callCount = 0;
             prop.Subscribe(_ => callCount++);
 
             prop.Value = obj;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Runestone.AesirArchitecture
 {
@@ -8,9 +9,7 @@ namespace Runestone.AesirArchitecture
     public abstract class AbstractModel : IModel
     {
         IContext _context;
-
         IContext IContextHolder.GetContext() => _context;
-
         void ICanSetContext.SetContext(IContext context) => _context = context;
 
         /// <summary>
@@ -27,7 +26,16 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 释放资源，触发 <see cref="OnDispose" />
         /// </summary>
-        public void Dispose() => OnDispose();
+        public void Dispose()
+        {
+            OnDispose();
+            _context = null;
+        }
+
+        /// <summary>
+        /// 获取依赖模块列表，子类可覆写
+        /// </summary>
+        public virtual HashSet<Type> GetDependencies() => null;
 
         /// <summary>
         /// 释放时的清理逻辑，子类可覆写

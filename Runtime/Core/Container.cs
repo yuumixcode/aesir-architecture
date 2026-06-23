@@ -5,10 +5,12 @@ namespace Runestone.AesirArchitecture
 {
     /// <summary>
     /// 类型键控实例容器。按类型注册、查询与解析实例，供上下文管理模块生命周期。
+    /// <para>使用 <see cref="Dictionary{TKey, TValue}" /> 保证 O(1) 查询，使用 <see cref="List{T}" /> 保证注册顺序遍历。</para>
     /// </summary>
     public sealed class Container<T> where T : class
     {
         readonly Dictionary<Type, T> _instances = new Dictionary<Type, T>();
+        readonly List<T> _orderedInstances = new List<T>();
 
         /// <summary>
         /// 注册实例，以类型作为键。
@@ -21,6 +23,7 @@ namespace Runestone.AesirArchitecture
         {
             var key = typeof(TItem);
             _instances[key] = instance;
+            _orderedInstances.Add(instance);
         }
 
         /// <summary>
@@ -39,13 +42,23 @@ namespace Runestone.AesirArchitecture
         }
 
         /// <summary>
-        /// 获取所有已注册的实例
+        /// 按 <see cref="Type" /> 获取已注册的实例，不存在则返回 null。
+        /// 用于依赖项校验等需要运行时 Type 查询的场景。
         /// </summary>
-        public IEnumerable<T> GetAll() => _instances.Values;
+        public T GetByType(Type type) => _instances.GetValueOrDefault(type);
+
+        /// <summary>
+        /// 按注册顺序获取所有已注册的实例
+        /// </summary>
+        public IEnumerable<T> GetAll() => _orderedInstances;
 
         /// <summary>
         /// 清空所有已注册实例
         /// </summary>
-        public void Clear() => _instances.Clear();
+        public void Clear()
+        {
+            _instances.Clear();
+            _orderedInstances.Clear();
+        }
     }
 }

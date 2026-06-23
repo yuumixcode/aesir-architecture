@@ -10,7 +10,8 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 执行无参查询
         /// </summary>
-        public static TResult ExecuteQuery<T, TResult>(this ICanExecuteQuery self) where T : IQuery<TResult>, new()
+        public static TResult ExecuteQuery<T, TResult>(this ICanExecuteQuery self)
+            where T : IQuery<TResult>, new()
         {
             var query = new T();
             query.SetContext(self.GetContext());

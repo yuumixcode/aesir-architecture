@@ -13,7 +13,10 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 添加订阅句柄，使其在调用条件满足时自动注销
         /// </summary>
-        public IUnsubscribe AddUnsubscribeHandle(IUnsubscribe handle) => _handles.Add(handle);
+        public void AddUnsubscribeHandle(AutoUnsubscribeHandle handle)
+        {
+            _handles.Add(handle);
+        }
 
         /// <summary>
         /// 注销所有已注册的订阅并清空列表

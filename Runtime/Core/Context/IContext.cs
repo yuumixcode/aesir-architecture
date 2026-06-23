@@ -15,7 +15,7 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 上下文共享的事件总线。所有 ICanInvokeWithContext / ICanSubscribeWithContext 持有者通过此总线收发事件。
         /// </summary>
-        MiniEventHub EventHub { get; }
+        MiniEventBus EventBus { get; }
 
         /// <summary>
         /// 注册 Model

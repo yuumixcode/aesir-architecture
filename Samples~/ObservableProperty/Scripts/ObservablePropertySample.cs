@@ -70,7 +70,7 @@ namespace Runestone.AesirArchitecture.Samples
         public IReadOnlyObservableProperty<Vector2> ObservablePosition => observablePosition;
         public IReadOnlyObservableProperty<Vector3> ObservableVelocity => observableVelocity;
 
-        IUnsubscribe _hpSub, _speedSub, _nameSub, _aliveSub, _alignSub, _posSub, _velSub;
+        AutoUnsubscribeHandle _hpSub, _speedSub, _nameSub, _aliveSub, _alignSub, _posSub, _velSub;
 
         void OnEnable()
         {
@@ -85,13 +85,13 @@ namespace Runestone.AesirArchitecture.Samples
 
         void OnDisable()
         {
-            _hpSub?.Dispose();
-            _speedSub?.Dispose();
-            _nameSub?.Dispose();
-            _aliveSub?.Dispose();
-            _alignSub?.Dispose();
-            _posSub?.Dispose();
-            _velSub?.Dispose();
+            _hpSub.Dispose();
+            _speedSub.Dispose();
+            _nameSub.Dispose();
+            _aliveSub.Dispose();
+            _alignSub.Dispose();
+            _posSub.Dispose();
+            _velSub.Dispose();
         }
     }
 

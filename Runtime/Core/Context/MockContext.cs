@@ -9,7 +9,7 @@ namespace Runestone.AesirArchitecture
     /// 构造时立即初始化，Dispose 后由 GC 回收，不会自动复活。
     /// </para>
     /// </summary>
-    public sealed class MockContext : ContextBase
+    public sealed class MockContext : BaseContext
     {
         readonly Action<IContext> _configure;
 

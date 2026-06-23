@@ -4,21 +4,21 @@ namespace Runestone.AesirArchitecture
 {
     public static class UnsubscribeExtensions
     {
-        public static void UnsubscribeWhenGameObjectOnDestroyed(this IUnsubscribe unsubscribe,
+        public static void UnsubscribeWhenGameObjectOnDestroyed(this AutoUnsubscribeHandle unsubscribe,
             GameObject gameObject)
         {
             var unsubscribeInvoker = GetOrAddComponent<UnsubscribeOnDestroyInvoker>(gameObject);
             unsubscribeInvoker.AddUnsubscribeHandle(unsubscribe);
         }
 
-        public static void UnsubscribeWhenGameObjectOnDisable(this IUnsubscribe unsubscribe,
+        public static void UnsubscribeWhenGameObjectOnDisable(this AutoUnsubscribeHandle unsubscribe,
             GameObject gameObject)
         {
             var unsubscribeInvoker = GetOrAddComponent<UnsubscribeOnDisableInvoker>(gameObject);
             unsubscribeInvoker.AddUnsubscribeHandle(unsubscribe);
         }
 
-        public static void UnsubscribeWhenOnSceneUnloaded(this IUnsubscribe unsubscribe)
+        public static void UnsubscribeWhenOnSceneUnloaded(this AutoUnsubscribeHandle unsubscribe)
         {
             UnsubscribeOnSceneUnloadedInvoker.Instance.AddUnsubscribeHandle(unsubscribe);
         }

@@ -21,7 +21,7 @@ namespace Runestone.AesirArchitecture.Editor.OdinIntegration
             if (member.MemberType == MemberTypes.Field &&
                 member.Name == ObservableProperty<T>.PrivateValueFieldName)
             {
-                attributes.Add(new OnValueChangedAttribute("Invoke", true));
+                attributes.Add(new OnValueChangedAttribute(ObservableProperty<T>.InvokeMethodName, true));
                 attributes.Add(new LabelTextAttribute("@$property.Parent.Name", true, SdfIconType.EyeFill));
             }
         }

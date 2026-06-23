@@ -40,7 +40,7 @@ namespace Runestone.AesirArchitecture.Samples
         public IReadOnlyObservableProperty<WeaponStats> ObservableWeapon => observableWeapon;
         public IReadOnlyObservableProperty<CharacterData> ObservableCharacter => observableCharacter;
 
-        IUnsubscribe _weaponSub, _charSub;
+        AutoUnsubscribeHandle _weaponSub, _charSub;
 
         void OnEnable()
         {
@@ -52,8 +52,8 @@ namespace Runestone.AesirArchitecture.Samples
 
         void OnDisable()
         {
-            _weaponSub?.Dispose();
-            _charSub?.Dispose();
+            _weaponSub.Dispose();
+            _charSub.Dispose();
         }
     }
 }

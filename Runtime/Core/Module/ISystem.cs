@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Runestone.AesirArchitecture
 {
     /// <summary>
@@ -12,5 +15,11 @@ namespace Runestone.AesirArchitecture
     /// </para>
     /// </summary>
     public interface ISystem : IContextHolder, ICanSetContext, ICanGetModel, ICanGetSystem,
-        ICanExecuteCommand, ICanExecuteQuery, ICanInvokeWithContext, ICanInitialize { }
+        ICanExecuteCommand, ICanExecuteQuery, ICanInvokeWithContext, ICanInitialize
+    {
+        /// <summary>
+        /// 获取依赖模块列表。依赖项必须是 <see cref="IModel" /> 或 <see cref="ISystem" /> 的子类。
+        /// </summary>
+        HashSet<Type> GetDependencies();
+    }
 }

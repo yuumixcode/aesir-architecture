@@ -1,13 +1,15 @@
 {
-  "name": "Runestone.AesirArchitecture",
-  "rootNamespace": "Runestone.AesirArchitecture",
+  "name": "Runestone.AesirArchitecture.ReferenceSource",
+  "rootNamespace": "",
   "references": [],
-  "includePlatforms": [],
+  "includePlatforms": [
+    "Editor"
+  ],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
   "overrideReferences": false,
   "precompiledReferences": [],
-  "autoReferenced": true,
+  "autoReferenced": false,
   "defineConstraints": [],
   "versionDefines": [],
   "noEngineReferences": false

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
+using NUnit.Framework;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
-using NUnit.Framework;
 
-namespace Runestone.AesirArchitecture.Tests
+namespace Runestone.AesirArchitecture.Tests.Editor
 {
     public class AesirArchitectureLifeCycleTests
     {
@@ -30,8 +30,8 @@ namespace Runestone.AesirArchitecture.Tests
         [Test]
         public void InsertSystemBefore_TargetExists_InsertsBefore()
         {
-            Type markerType = typeof(TestMarkerBeforeUpdate);
-            bool inserted = PlayerLoopUtility.InsertSystemBefore<Update>(
+            var markerType = typeof(TestMarkerBeforeUpdate);
+            var inserted = PlayerLoopUtility.InsertSystemBefore<Update>(
                 new PlayerLoopSystem { type = markerType });
 
             Assert.IsTrue(inserted);
@@ -45,8 +45,8 @@ namespace Runestone.AesirArchitecture.Tests
         [Test]
         public void InsertSystemAfter_TargetExists_InsertsAfter()
         {
-            Type markerType = typeof(TestMarkerAfterFixedUpdate);
-            bool inserted = PlayerLoopUtility.InsertSystemAfter<FixedUpdate>(
+            var markerType = typeof(TestMarkerAfterFixedUpdate);
+            var inserted = PlayerLoopUtility.InsertSystemAfter<FixedUpdate>(
                 new PlayerLoopSystem { type = markerType });
 
             Assert.IsTrue(inserted);
@@ -60,15 +60,13 @@ namespace Runestone.AesirArchitecture.Tests
         [Test]
         public void InsertSystemBefore_SameTargetTwice_InsertsTwoSystems()
         {
-            Type marker1 = typeof(TestMarkerTwice1);
-            Type marker2 = typeof(TestMarkerTwice2);
+            var marker1 = typeof(TestMarkerTwice1);
+            var marker2 = typeof(TestMarkerTwice2);
 
-            PlayerLoopUtility.InsertSystemBefore<Update>(
-                new PlayerLoopSystem { type = marker1 });
-            PlayerLoopUtility.InsertSystemBefore<Update>(
-                new PlayerLoopSystem { type = marker2 });
+            PlayerLoopUtility.InsertSystemBefore<Update>(new PlayerLoopSystem { type = marker1 });
+            PlayerLoopUtility.InsertSystemBefore<Update>(new PlayerLoopSystem { type = marker2 });
 
-            PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
             Assert.IsTrue(ContainsType(ref loop, marker1), "First marker should exist");
             Assert.IsTrue(ContainsType(ref loop, marker2), "Second marker should exist");
             AesirArchitectureLog.TestLog("InsertSystemBefore(连续两次): 成功在 Update 中插入了两个自定义系统");
@@ -80,12 +78,13 @@ namespace Runestone.AesirArchitecture.Tests
         [Test]
         public void GetCurrentPlayerLoopDescription_DefaultLoop_ContainsCoreSystems()
         {
-            string dump = PlayerLoopUtility.GetCurrentPlayerLoopDescription();
+            var dump = PlayerLoopUtility.GetCurrentPlayerLoopDescription();
 
             Assert.IsTrue(dump.Contains("Update"), "Should contain Update");
             Assert.IsTrue(dump.Contains("FixedUpdate"), "Should contain FixedUpdate");
             Assert.IsTrue(dump.Contains("PostLateUpdate"), "Should contain PostLateUpdate");
-            AesirArchitectureLog.TestLog("GetCurrentPlayerLoopDescription(默认循环): 输出中包含 Update、FixedUpdate、PostLateUpdate 等核心系统");
+            AesirArchitectureLog.TestLog(
+                "GetCurrentPlayerLoopDescription(默认循环): 输出中包含 Update、FixedUpdate、PostLateUpdate 等核心系统");
         }
 
         /// <summary>
@@ -94,15 +93,15 @@ namespace Runestone.AesirArchitecture.Tests
         [Test]
         public void GetCurrentPlayerLoopDescription_AfterInsert_ShowsInsertedSystem()
         {
-            Type markerType = typeof(TestMarkerForDump);
-            PlayerLoopUtility.InsertSystemBefore<Update>(
-                new PlayerLoopSystem { type = markerType });
+            var markerType = typeof(TestMarkerForDump);
+            PlayerLoopUtility.InsertSystemBefore<Update>(new PlayerLoopSystem { type = markerType });
 
-            string dump = PlayerLoopUtility.GetCurrentPlayerLoopDescription();
+            var dump = PlayerLoopUtility.GetCurrentPlayerLoopDescription();
 
             Assert.IsTrue(dump.Contains(markerType.Name),
                 $"Dump should contain inserted system '{markerType.Name}'");
-            AesirArchitectureLog.TestLog($"GetCurrentPlayerLoopDescription(插入后): 输出中包含插入的系统 '{markerType.Name}'");
+            AesirArchitectureLog.TestLog(
+                $"GetCurrentPlayerLoopDescription(插入后): 输出中包含插入的系统 '{markerType.Name}'");
         }
 
         /// <summary>
@@ -116,8 +115,10 @@ namespace Runestone.AesirArchitecture.Tests
             AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate, () => { });
             AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.AfterUpdate, () => { });
 
-            Assert.AreEqual(1, AesirArchitectureLifeCycle.GetHookCount(AesirArchitectureLifeCyclePhase.BeforeUpdate));
-            Assert.AreEqual(1, AesirArchitectureLifeCycle.GetHookCount(AesirArchitectureLifeCyclePhase.AfterUpdate));
+            Assert.AreEqual(1,
+                AesirArchitectureLifeCycle.GetHookCount(AesirArchitectureLifeCyclePhase.BeforeUpdate));
+            Assert.AreEqual(1,
+                AesirArchitectureLifeCycle.GetHookCount(AesirArchitectureLifeCyclePhase.AfterUpdate));
             AesirArchitectureLog.TestLog("Register(BeforeUpdate/AfterUpdate): 两个阶段注册互不干扰，各自计数为 1");
         }
 
@@ -128,11 +129,13 @@ namespace Runestone.AesirArchitecture.Tests
         public void Clear_RemovesAllRegisteredHooks()
         {
             AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate, () => { });
-            Assert.AreEqual(1, AesirArchitectureLifeCycle.GetHookCount(AesirArchitectureLifeCyclePhase.BeforeUpdate));
+            Assert.AreEqual(1,
+                AesirArchitectureLifeCycle.GetHookCount(AesirArchitectureLifeCyclePhase.BeforeUpdate));
 
             AesirArchitectureLifeCycle.Reset();
 
-            Assert.AreEqual(0, AesirArchitectureLifeCycle.GetHookCount(AesirArchitectureLifeCyclePhase.BeforeUpdate));
+            Assert.AreEqual(0,
+                AesirArchitectureLifeCycle.GetHookCount(AesirArchitectureLifeCyclePhase.BeforeUpdate));
             AesirArchitectureLog.TestLog("Clear: 成功清除之前注册的所有回调");
         }
 
@@ -143,11 +146,16 @@ namespace Runestone.AesirArchitecture.Tests
         public void Register_SameOrder_ExecutesInRegistrationOrder()
         {
             var executionOrder = new List<int>();
-            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate, () => executionOrder.Add(1), 0);
-            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate, () => executionOrder.Add(2), 0);
-            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate, () => executionOrder.Add(3), -1);
-            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate, () => executionOrder.Add(4), 1);
-            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate, () => executionOrder.Add(5), 0);
+            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate,
+                () => executionOrder.Add(1));
+            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate,
+                () => executionOrder.Add(2));
+            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate,
+                () => executionOrder.Add(3), -1);
+            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate,
+                () => executionOrder.Add(4), 1);
+            AesirArchitectureLifeCycle.Register(AesirArchitectureLifeCyclePhase.BeforeUpdate,
+                () => executionOrder.Add(5));
 
             // 直接调用 internal 方法（通过 InternalsVisibleTo），替代反射
             AesirArchitectureLifeCycle.OnBeforeUpdate();
@@ -163,8 +171,9 @@ namespace Runestone.AesirArchitecture.Tests
         /// </summary>
         static void AssertIsBeforeInLoop(Type markerType, Type targetType)
         {
-            PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
-            bool found = TryFindSiblingIndices(ref loop, markerType, targetType, out var markerIdx, out var targetIdx);
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
+            var found = TryFindSiblingIndices(ref loop, markerType, targetType, out var markerIdx,
+                out var targetIdx);
             Assert.IsTrue(found, $"{markerType.Name} and {targetType.Name} should be siblings in the loop");
             Assert.Less(markerIdx, targetIdx, $"{markerType.Name} should be before {targetType.Name}");
         }
@@ -174,14 +183,18 @@ namespace Runestone.AesirArchitecture.Tests
         /// </summary>
         static void AssertIsAfterInLoop(Type markerType, Type targetType)
         {
-            PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
-            bool found = TryFindSiblingIndices(ref loop, markerType, targetType, out var markerIdx, out var targetIdx);
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
+            var found = TryFindSiblingIndices(ref loop, markerType, targetType, out var markerIdx,
+                out var targetIdx);
             Assert.IsTrue(found, $"{markerType.Name} and {targetType.Name} should be siblings in the loop");
             Assert.Greater(markerIdx, targetIdx, $"{markerType.Name} should be after {targetType.Name}");
         }
 
-        static bool TryFindSiblingIndices(ref PlayerLoopSystem system, Type typeA, Type typeB,
-            out int indexA, out int indexB)
+        static bool TryFindSiblingIndices(ref PlayerLoopSystem system,
+            Type typeA,
+            Type typeB,
+            out int indexA,
+            out int indexB)
         {
             indexA = -1;
             indexB = -1;
@@ -244,9 +257,13 @@ namespace Runestone.AesirArchitecture.Tests
         }
 
         struct TestMarkerBeforeUpdate { }
+
         struct TestMarkerAfterFixedUpdate { }
+
         struct TestMarkerTwice1 { }
+
         struct TestMarkerTwice2 { }
+
         struct TestMarkerForDump { }
     }
 }

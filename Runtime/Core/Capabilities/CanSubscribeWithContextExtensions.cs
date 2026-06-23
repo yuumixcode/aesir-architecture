@@ -10,15 +10,15 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 通过上下文事件总线注册事件监听，返回可自动注销的订阅句柄
         /// </summary>
-        public static IUnsubscribe Subscribe<T>(this ICanSubscribeWithContext self, Action<T> onEvent)
-            where T : IEventArgs =>
-            self.GetContext().EventHub.Subscribe(onEvent);
+        public static AutoUnsubscribeHandle Subscribe<T>(this ICanSubscribeWithContext self,
+            Action<T> onEvent) where T : IEventArgs =>
+            self.GetContext().EventBus.Subscribe(onEvent);
 
         /// <summary>
         /// 通过上下文事件总线注销事件监听
         /// </summary>
         public static void Unsubscribe<T>(this ICanSubscribeWithContext self, Action<T> onEvent)
             where T : IEventArgs =>
-            self.GetContext().EventHub.Unsubscribe(onEvent);
+            self.GetContext().EventBus.Unsubscribe(onEvent);
     }
 }

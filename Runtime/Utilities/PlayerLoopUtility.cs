@@ -1,7 +1,6 @@
 using System;
 using System.Text;
 using UnityEngine.LowLevel;
-using UnityEngine.PlayerLoop;
 
 namespace Runestone.AesirArchitecture
 {
@@ -21,7 +20,7 @@ namespace Runestone.AesirArchitecture
         /// <returns>是否成功找到目标并插入</returns>
         public static bool InsertSystemBefore<TTarget>(PlayerLoopSystem system)
         {
-            PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
             if (!InsertBeforeInternal(ref loop, typeof(TTarget), system))
             {
                 return false;
@@ -39,7 +38,7 @@ namespace Runestone.AesirArchitecture
         /// <returns>是否成功找到目标并插入</returns>
         public static bool InsertSystemAfter<TTarget>(PlayerLoopSystem system)
         {
-            PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
             if (!InsertAfterInternal(ref loop, typeof(TTarget), system))
             {
                 return false;
@@ -56,7 +55,7 @@ namespace Runestone.AesirArchitecture
         /// <returns>是否包含目标子系统</returns>
         public static bool ContainsSystem<TTarget>()
         {
-            PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
             return ContainsSystemInternal(ref loop, typeof(TTarget));
         }
 
@@ -70,7 +69,7 @@ namespace Runestone.AesirArchitecture
         public static string GetCurrentPlayerLoopDescription()
         {
             var sb = new StringBuilder();
-            PlayerLoopSystem loop = PlayerLoop.GetCurrentPlayerLoop();
+            var loop = PlayerLoop.GetCurrentPlayerLoop();
             AppendPlayerLoopSystemDescription(loop, 0, sb);
             return sb.ToString();
         }
@@ -164,9 +163,9 @@ namespace Runestone.AesirArchitecture
             if (system.type != null)
             {
                 var indent = new string(' ', depth * 4);
-                bool isAesir = system.type.Name.StartsWith("AesirArchitecture");
-                string name = system.type.Name;
-                string prefix = isAesir ? "[Aesir Architecture] " : string.Empty;
+                var isAesir = system.type.Name.StartsWith("AesirArchitecture");
+                var name = system.type.Name;
+                var prefix = isAesir ? "[Aesir Architecture] " : string.Empty;
                 sb.AppendLine($"{indent}{prefix}{name}");
             }
 
