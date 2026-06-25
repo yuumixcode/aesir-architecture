@@ -182,7 +182,7 @@ cn.runestone.aesir.architecture/
 │   ├── Command/              # ICommand, IAsyncCommand + Abstract 基类
 │   ├── Query/                # IQuery<TResult>, IAsyncQuery<TResult> + Abstract 基类
 │   ├── Event/                # MiniEventBus, MiniEvent<T>, AutoUnsubscribeHandle + 生命周期绑定
-│   ├── Observer/             # ObservableProperty<T>, IReadOnlyObservableProperty<T>
+│   ├── Observable/           # ObservableProperty<T>, IReadOnlyObservableProperty<T>
 │   └── Utilities/            # PlayerLoopUtility
 ├── Editor/
 │   ├── Runestone.AesirArchitecture.Editor.asmdef
