@@ -410,9 +410,9 @@ public interface IPresenter : IContextHolder, ICanExecuteCommand, ICanExecuteQue
 ```
 IReadOnlyObservableProperty<out T>  (协变只读)
     ├── T Value { get; }
-    ├── IUnsubscribe Subscribe(Action<T>)
+    ├── AutoUnsubscribeHandle Subscribe(Action<T>)
     ├── void Unsubscribe(Action<T>)
-    ├── IUnsubscribe SubscribeAndInvoke(Action<T>)
+    ├── AutoUnsubscribeHandle SubscribeAndInvoke(Action<T>)
     └── void Invoke()
 
 IObservableProperty<T> : IReadOnlyObservableProperty<T>  (可写)
@@ -452,7 +452,7 @@ _model.Count.Subscribe(UpdateCountText)
 | `Value` | 获取/设置值。setter 会做相等性检查，值不同才触发通知 |
 | `SetValue(T)` | 语义等价于 `Value` 的 setter |
 | `SetValueSilently(T)` | 静默设置值，不触发通知。用于反序列化或批量更新后统一触发 |
-| `Subscribe(Action<T>)` | 订阅值变更，返回 `IUnsubscribe` 句柄 |
+| `Subscribe(Action<T>)` | 订阅值变更，返回 `AutoUnsubscribeHandle` 句柄 |
 | `SubscribeAndInvoke(Action<T>)` | 订阅并立即触发一次当前值，用于初始化时同步订阅方状态 |
 | `Unsubscribe(Action<T>)` | 取消订阅 |
 | `Invoke()` | 强制触发值变更通知，绕过相等性检查 |
@@ -610,7 +610,7 @@ this.Unsubscribe<ScoreChangedEvent>(OnScoreChanged);
 | `UnsubscribeWhenGameObjectOnDisable(gameObject)` | GameObject 禁用时（OnDisable） | 面板/窗口订阅 |
 | `UnsubscribeWhenOnSceneUnloaded()` | 任意场景卸载时 | 跨场景订阅 |
 
-实现原理：扩展方法在目标 GameObject 上挂载对应的 `UnsubscribeInvoker` 组件（若不存在），将 `IUnsubscribe` 句柄添加到内部的 `UnsubscribeHandleCollection` 中。当 Unity 生命周期事件触发时，批量调用所有句柄的 `Dispose()`。
+实现原理：扩展方法在目标 GameObject 上挂载对应的 `UnsubscribeInvoker` 组件（若不存在），将 `AutoUnsubscribeHandle` 句柄添加到内部的 `UnsubscribeHandleCollection` 中。当 Unity 生命周期事件触发时，批量调用所有句柄的 `Dispose()`。
 
 ```
 UnsubscribeInvoker (抽象基类, MonoBehaviour)
@@ -635,7 +635,7 @@ handle.Dispose();    // 注销
 
 #### AutoUnsubscribeHandle
 
-`Subscribe()` 返回的 `IUnsubscribe` 句柄实现为 `AutoUnsubscribeHandle`（struct），确保重复调用 `Dispose()` 仅执行一次注销，安全高效。
+`Subscribe()` 返回的 `AutoUnsubscribeHandle` 句柄实现为 struct，确保重复调用 `Dispose()` 仅执行一次注销，安全高效。
 
 ---
 
@@ -865,7 +865,7 @@ public sealed class CounterPresenter : IPresenter<CounterContext>
 {
     readonly ICounterView _view;
     readonly ICounterModel _model;
-    IUnsubscribe _countSubscription;
+    AutoUnsubscribeHandle _countSubscription;
 
     public CounterPresenter(ICounterView view)
     {
@@ -1102,9 +1102,9 @@ public sealed class ObservableProperty<T> : IObservableProperty<T>
     public void SetValue(T v);
     public void Modify(Action<T> modifier);
 
-    public IUnsubscribe Subscribe(Action<T> callback);
+    public AutoUnsubscribeHandle Subscribe(Action<T> callback);
     public void Unsubscribe(Action<T> callback);
-    public IUnsubscribe SubscribeAndInvoke(Action<T> callback);
+    public AutoUnsubscribeHandle SubscribeAndInvoke(Action<T> callback);
     public void Invoke();
     public void Clear();
 }
@@ -1116,9 +1116,9 @@ public sealed class ObservableProperty<T> : IObservableProperty<T>
 public interface IReadOnlyObservableProperty<out T>
 {
     T Value { get; }
-    IUnsubscribe Subscribe(Action<T> callback);
+    AutoUnsubscribeHandle Subscribe(Action<T> callback);
     void Unsubscribe(Action<T> callback);
-    IUnsubscribe SubscribeAndInvoke(Action<T> callback);
+    AutoUnsubscribeHandle SubscribeAndInvoke(Action<T> callback);
     void Invoke();
 }
 ```
@@ -1150,7 +1150,7 @@ public sealed class MiniEventBus
     public void Clear();
 
     // IEventArgs 事件
-    public IUnsubscribe Subscribe<T>(Action<T> onEvent) where T : IEventArgs;
+    public AutoUnsubscribeHandle Subscribe<T>(Action<T> onEvent) where T : IEventArgs;
     public void Unsubscribe<T>(Action<T> onEvent) where T : IEventArgs;
     public void Invoke<T>() where T : IEventArgs, new();
     public void Invoke<T>(T e) where T : IEventArgs;
@@ -1162,8 +1162,8 @@ public sealed class MiniEventBus
 ```csharp
 public sealed class MiniEvent : ISubscribe
 {
-    public IUnsubscribe Subscribe(Action callback);
-    public IUnsubscribe SubscribeAndInvoke(Action callback);
+    public AutoUnsubscribeHandle Subscribe(Action callback);
+    public AutoUnsubscribeHandle SubscribeAndInvoke(Action callback);
     public void Unsubscribe(Action callback);
     public void Invoke();
     public void Dispose();
@@ -1175,8 +1175,8 @@ public sealed class MiniEvent : ISubscribe
 ```csharp
 public sealed class MiniEvent<T> : ISubscribe where T : IEventArgs
 {
-    public IUnsubscribe Subscribe(Action<T> onEvent);
-    public IUnsubscribe SubscribeAndInvoke(Action<T> onEvent, T eventArgs);
+    public AutoUnsubscribeHandle Subscribe(Action<T> onEvent);
+    public AutoUnsubscribeHandle SubscribeAndInvoke(Action<T> onEvent, T eventArgs);
     public void Unsubscribe(Action<T> onEvent);
     public void Invoke(T t);
     public void Dispose();
@@ -1186,21 +1186,16 @@ public sealed class MiniEvent<T> : ISubscribe where T : IEventArgs
 #### 自动注销扩展方法
 
 ```csharp
-// IUnsubscribe 扩展
-void UnsubscribeWhenGameObjectOnDestroyed(this IUnsubscribe unsubscribe, GameObject gameObject);
-void UnsubscribeWhenGameObjectOnDisable(this IUnsubscribe unsubscribe, GameObject gameObject);
-void UnsubscribeWhenOnSceneUnloaded(this IUnsubscribe unsubscribe);
+// AutoUnsubscribeHandle 扩展
+void UnsubscribeWhenGameObjectOnDestroyed(this AutoUnsubscribeHandle unsubscribe, GameObject gameObject);
+void UnsubscribeWhenGameObjectOnDisable(this AutoUnsubscribeHandle unsubscribe, GameObject gameObject);
+void UnsubscribeWhenOnSceneUnloaded(this AutoUnsubscribeHandle unsubscribe);
 ```
 
-#### IUnsubscribe / AutoUnsubscribeHandle
+#### AutoUnsubscribeHandle
 
 ```csharp
-public interface IUnsubscribe
-{
-    void Dispose();
-}
-
-public struct AutoUnsubscribeHandle : IUnsubscribe
+public struct AutoUnsubscribeHandle : IDisposable
 {
     public AutoUnsubscribeHandle(Action unsubscribeCallback);
     public void Dispose();  // 重复调用安全
