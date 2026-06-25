@@ -69,12 +69,12 @@
 
 ### 1.3 事件命名
 
-RAA 采用如下事件命名方案（基于 Unity 推荐的 Action 委托模式）：
+RAA 采用如下事件命名方案（基于 Unity 习惯和 Action 委托模式）：
 
 | 角色 | 命名规则 | 示例 |
 |------|---------|------|
 | 事件（字段） | `UpperCamelCase` 动词短语，**现在分词** = 之前，**过去分词** = 之后 | `OpeningDoor`, `DoorOpened` |
-| 事件发布方法（发布者） | `Raise` + 事件名 | `RaiseDoorOpened()` |
+| 事件发布方法（发布者） | `Invoke` + 事件名 | `InvokeDoorOpened()` |
 | 事件订阅方法（订阅者） | `On` + 事件名，表示由事件自动触发 | `OnDoorOpened()` |
 
 ```csharp
@@ -84,14 +84,14 @@ public event Action DoorOpened;       // 事件"后"
 public event Action<int> PointsScored;
 
 // 事件发布方法
-public void RaiseDoorOpened() => DoorOpened?.Invoke();
-public void RaisePointsScored(int points) => PointsScored?.Invoke(points);
+public void InvokeDoorOpened() => DoorOpened?.Invoke();
+public void InvokePointsScored(int points) => PointsScored?.Invoke(points);
 
 // 事件订阅方法（订阅者端）
 private void OnDoorOpened() { /* ... */ }
 ```
 
-> **`On` = 事件自动触发**，`Raise` = 代码主动发布。`On` 前缀仅用于表示"由事件系统调起"的回调方法。
+> **`On` = 事件自动触发**，`Invoke` = 代码主动发布。`On` 前缀仅用于表示"由事件系统调起"的回调方法。
 
 ### 1.4 枚举
 
