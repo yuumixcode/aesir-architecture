@@ -1,6 +1,6 @@
 {
   "name": "Runestone.AesirArchitecture.Editor.OdinIntegration",
-  "rootNamespace": "Runestone.AesirArchitecture.Editor.OdinIntegration",
+  "rootNamespace": "Runestone.AesirArchitecture.Editor",
   "references": [
     "Runestone.AesirArchitecture"
   ],

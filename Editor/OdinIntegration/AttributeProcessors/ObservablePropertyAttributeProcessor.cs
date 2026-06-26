@@ -4,7 +4,7 @@ using System.Reflection;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 
-namespace Runestone.AesirArchitecture.Editor.OdinIntegration
+namespace Runestone.AesirArchitecture.Editor
 {
     public class ObservablePropertyAttributeProcessor<T> : OdinAttributeProcessor<ObservableProperty<T>>
     {

@@ -61,7 +61,7 @@ namespace Runestone.AesirArchitecture
         }
 
         /// <summary>
-        /// 单例初始化完成后调用，子类可覆写以注册自定义事件
+        /// 单例初始化完成后调用，子类可覆写以执行自定义初始化逻辑
         /// </summary>
         protected virtual void OnAwake() { }
 

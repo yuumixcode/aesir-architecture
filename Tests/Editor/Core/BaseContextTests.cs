@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using UnityEngine.TestTools;
 
 namespace Runestone.AesirArchitecture.Tests.Editor
 {
@@ -314,12 +316,14 @@ namespace Runestone.AesirArchitecture.Tests.Editor
         /// <summary>
         /// 验证异步命令执行后正确修改 Model 状态
         /// </summary>
-        [Test]
-        public async Task ExecuteCommandAsync_ModifiesModelState()
+        [UnityTest]
+        public IEnumerator ExecuteCommandAsync_ModifiesModelState()
         {
             var model = _ctx.GetModel<ICounterModel>();
             Assert.AreEqual(0, model.Count.Value);
-            await _controller.ExecuteCommandAsync<IncreaseCountAsyncCommand>();
+
+            yield return new TaskEnumerator(_controller.ExecuteCommandAsync<IncreaseCountAsyncCommand>());
+
             Assert.AreEqual(1, model.Count.Value);
             AesirArchitectureLog.TestLog("ExecuteCommandAsync: 异步命令成功修改了 Model 状态");
         }
@@ -327,11 +331,15 @@ namespace Runestone.AesirArchitecture.Tests.Editor
         /// <summary>
         /// 验证异步查询正确返回结果
         /// </summary>
-        [Test]
-        public async Task ExecuteQueryAsync_ReturnsCorrectResult()
+        [UnityTest]
+        public IEnumerator ExecuteQueryAsync_ReturnsCorrectResult()
         {
             _controller.ExecuteCommand<IncreaseCountCommand>();
-            var result = await _controller.ExecuteQueryAsync<GetCountAsyncQuery, int>();
+
+            int result = 0;
+            yield return new TaskEnumerator<int>(
+                _controller.ExecuteQueryAsync<GetCountAsyncQuery, int>(), r => result = r);
+
             Assert.AreEqual(1, result);
             AesirArchitectureLog.TestLog("ExecuteQueryAsync: 异步查询正确返回结果");
         }
@@ -545,6 +553,52 @@ namespace Runestone.AesirArchitecture.Tests.Editor
             public TestController(IContext context) => _context = context;
 
             IContext IContextHolder.GetContext() => _context;
+        }
+
+        /// <summary>
+        /// 将 Task 转为 IEnumerator，供 UnityTest 协程驱动异步操作。
+        /// </summary>
+        class TaskEnumerator : IEnumerator
+        {
+            readonly Task _task;
+
+            public TaskEnumerator(Task task) => _task = task;
+
+            public object Current => null;
+
+            public bool MoveNext() => !_task.IsCompleted;
+
+            public void Reset() => throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// 将 Task{T} 转为 IEnumerator，完成后通过 callback 回传结果。
+        /// </summary>
+        class TaskEnumerator<T> : IEnumerator
+        {
+            readonly Task<T> _task;
+            readonly Action<T> _onComplete;
+
+            public TaskEnumerator(Task<T> task, Action<T> onComplete)
+            {
+                _task = task;
+                _onComplete = onComplete;
+            }
+
+            public object Current => null;
+
+            public bool MoveNext()
+            {
+                if (!_task.IsCompleted)
+                {
+                    return true;
+                }
+
+                _onComplete(_task.Result);
+                return false;
+            }
+
+            public void Reset() => throw new NotSupportedException();
         }
     }
 }

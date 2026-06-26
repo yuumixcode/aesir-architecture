@@ -33,7 +33,7 @@
 
 ### 1.2 大小写与前缀速查
 
-基于 [Rider 默认命名规则](../References/Pictures/rider-code-style.png)：
+基于 Rider 默认命名规则：
 
 | 标识符 | 样式 | 示例 |
 |--------|------|------|
@@ -216,14 +216,14 @@ if (!_hooks.TryGetValue(phase, out var list))
     return;
 }
 
-for (int i = 0; i < list.Count; i++)
+for (var i = 0; i < list.Count; i++)
 {
     list[i].Callback.Invoke();
 }
 
 // ❌ 错误（省略大括号）
 if (!_sortDirty) return;
-for (int i = 0; i < list.Count; i++) DoSomething(i);
+for (var i = 0; i < list.Count; i++) DoSomething(i);
 ```
 
 ### 3.3 缩进与空白
@@ -252,7 +252,8 @@ struct HookEntry
 }
 
 // ❌ 错误（冗余的 private）
-private readonly Dictionary<AesirArchitectureLifeCyclePhase, List<HookEntry>> _hooks = new();
+private readonly Dictionary<AesirArchitectureLifeCyclePhase, List<HookEntry>> _hooks =
+    new Dictionary<AesirArchitectureLifeCyclePhase, List<HookEntry>>();
 private struct HookEntry { }
 ```
 
@@ -469,8 +470,8 @@ if (!_sortDirty)
 ### 7.3 事件发布与订阅
 
 ```csharp
-// 发布 — 使用 Raise 前缀
-public void RaiseDoorOpened() => DoorOpened?.Invoke();
+// 发布 — 使用 Invoke 前缀（详见 §1.3）
+public void InvokeDoorOpened() => DoorOpened?.Invoke();
 
 // 订阅 — 使用 On 前缀，表示由事件自动触发
 private void OnDoorOpened() { /* ... */ }
@@ -667,6 +668,140 @@ trim_trailing_whitespace = true
 - ❌ 非必要使用 try/catch/finally
 - ❌ 纯防御性代码（无明确触发场景的防护）——添加防御性代码时必须清楚在什么情况下会发生问题，有目的才防御，不为防御而防御
 - ❌ 创建 `Runestone.AesirArchitecture` 以外的子命名空间（Editor 除外）
+- ❌ 在单元测试中使用 `[Test] async Task` 异步测试方法——团结引擎 NUnit 3.5 不支持，必须使用 `[UnityTest]` + `IEnumerator`（详见第 14 节）
+
+---
+
+## 14 单元测试规范
+
+### 14.1 同步测试
+
+同步测试使用 `[Test]`，方法签名为 `void`：
+
+```csharp
+/// <summary>
+/// 验证 ExecuteCommand 执行命令并修改 Model 状态
+/// </summary>
+[Test]
+public void ExecuteCommand_ModifiesModelState()
+{
+    var model = _ctx.GetModel<ICounterModel>();
+    Assert.AreEqual(0, model.Count.Value);
+    _controller.ExecuteCommand<IncreaseCountCommand>();
+    Assert.AreEqual(1, model.Count.Value);
+    AesirArchitectureLog.TestLog("ExecuteCommand: 命令成功修改了 Model 状态");
+}
+```
+
+### 14.2 异步测试
+
+团结引擎使用 `com.unity.test-framework` 1.1.33 + NUnit 3.5 (net35)，**不支持 `async Task` 测试方法**。使用 `async Task` 会导致编译器报错 "Method has non-void return value, but no result is expected"。
+
+异步测试必须使用 `[UnityTest]` + `IEnumerator`，配合 `TaskEnumerator` 驱动异步操作：
+
+```csharp
+/// <summary>
+/// 验证异步命令执行后正确修改 Model 状态
+/// </summary>
+[UnityTest]
+public IEnumerator ExecuteCommandAsync_ModifiesModelState()
+{
+    var model = _ctx.GetModel<ICounterModel>();
+    Assert.AreEqual(0, model.Count.Value);
+
+    yield return new TaskEnumerator(_controller.ExecuteCommandAsync<IncreaseCountAsyncCommand>());
+
+    Assert.AreEqual(1, model.Count.Value);
+    AesirArchitectureLog.TestLog("ExecuteCommandAsync: 异步命令成功修改了 Model 状态");
+}
+```
+
+带返回值的异步测试使用 `TaskEnumerator<T>`，通过回调获取结果：
+
+```csharp
+/// <summary>
+/// 验证异步查询正确返回结果
+/// </summary>
+[UnityTest]
+public IEnumerator ExecuteQueryAsync_ReturnsCorrectResult()
+{
+    _controller.ExecuteCommand<IncreaseCountCommand>();
+
+    int result = 0;
+    yield return new TaskEnumerator<int>(
+        _controller.ExecuteQueryAsync<GetCountAsyncQuery, int>(), r => result = r);
+
+    Assert.AreEqual(1, result);
+    AesirArchitectureLog.TestLog("ExecuteQueryAsync: 异步查询正确返回结果");
+}
+```
+
+`TaskEnumerator` 实现模板：
+
+```csharp
+/// <summary>
+/// 将 Task 转为 IEnumerator，供 UnityTest 协程驱动异步操作。
+/// </summary>
+class TaskEnumerator : IEnumerator
+{
+    readonly Task _task;
+
+    public TaskEnumerator(Task task) => _task = task;
+
+    public object Current => null;
+
+    public bool MoveNext() => !_task.IsCompleted;
+
+    public void Reset() => throw new NotSupportedException();
+}
+
+/// <summary>
+/// 将 Task{T} 转为 IEnumerator，完成后通过 callback 回传结果。
+/// </summary>
+class TaskEnumerator<T> : IEnumerator
+{
+    readonly Task<T> _task;
+    readonly Action<T> _onComplete;
+
+    public TaskEnumerator(Task<T> task, Action<T> onComplete)
+    {
+        _task = task;
+        _onComplete = onComplete;
+    }
+
+    public object Current => null;
+
+    public bool MoveNext()
+    {
+        if (!_task.IsCompleted)
+        {
+            return true;
+        }
+
+        _onComplete(_task.Result);
+        return false;
+    }
+
+    public void Reset() => throw new NotSupportedException();
+}
+```
+
+### 14.3 测试日志
+
+所有测试断言通过后**必须**输出 `AesirArchitectureLog.TestLog`，禁止使用 `Debug.Log`：
+
+```csharp
+// ✅ 正确
+AesirArchitectureLog.TestLog("ExecuteCommand: 命令成功修改了 Model 状态");
+
+// ❌ 错误 — 违反架构日志铁律
+Debug.Log("ExecuteCommand: 命令成功修改了 Model 状态");
+```
+
+### 14.4 测试方法结构
+
+- 每个测试方法以 `<summary>` 文档注释说明作用
+- 禁止使用注释行（如 `// ── InsertSystem 测试 ──`）或 `#region` 划分测试区域
 
 ---
 
@@ -674,8 +809,7 @@ trim_trailing_whitespace = true
 
 | 来源 | 链接 |
 |------|------|
-| Unity C# Style Guide (Unity 6 Edition) 电子书 | `Docs/References/E-Books/Use_a_C__style_guide_for_clean_and_scalable_game_code_Unity_6_edition_e-book.pdf` |
-| Rider 命名规则截图 | `Docs/References/Pictures/rider-code-style.png` |
+| Unity C# Style Guide (Unity 6 Edition) 电子书 | <https://unity.com/resources/c-sharp-style-guide-unity-6> |
 | Unity 命名与代码风格 | <https://unity.com/how-to/naming-and-code-style-tips-c-scripting-unity> |
 | Unity 格式化最佳实践 | <https://unity.com/how-to/formatting-best-practices-c-scripting-unity> |
 | Unity 示例代码样式表 | <https://github.com/thomasjacobsen-unity/Unity-Code-Style-Guide> |

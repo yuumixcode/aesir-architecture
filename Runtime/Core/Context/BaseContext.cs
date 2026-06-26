@@ -34,12 +34,11 @@ namespace Runestone.AesirArchitecture
                 foreach (var depType in dependencies.Where(depType =>
                              !typeof(IModel).IsAssignableFrom(depType)))
                 {
-                    AesirArchitectureLog.Error(
-                        $"Model [{typeof(TModel).Name}] 声明了非法依赖项 [{depType.Name}]：Model 模块只能依赖 IModel 的子类。");
+                    throw new InvalidOperationException(
+                        $"{AesirArchitectureLog.ErrorTag} Model [{typeof(TModel).Name}] 声明了非法依赖项 [{depType.Name}]：Model 模块只能依赖 IModel 的子类。");
                 }
             }
 
-            // 只有依赖项正常才判定这个 Model 没有问题，才开始进行下一步。
             model.SetContext(this);
             _modelContainer.Register(model);
 
@@ -59,16 +58,20 @@ namespace Runestone.AesirArchitecture
 
         /// <summary>
         /// 注册 System 并绑定上下文。
-        /// <para>第一步：设置上下文。第二步：校验依赖集合（仅允许 IModel 和 ISystem）。第三步：若上下文已完成统一初始化，检查依赖项是否全部已初始化并立即初始化。</para>
+        /// <para>校验依赖集合（仅允许 IModel 和 ISystem）后设置上下文并注册。若上下文已完成统一初始化，检查依赖项是否全部已初始化并立即初始化。</para>
         /// </summary>
         public void RegisterSystem<TSystem>(TSystem system) where TSystem : class, ISystem
         {
-            foreach (var depType in system.GetDependencies().Where(depType =>
-                         !typeof(IModel).IsAssignableFrom(depType) &&
-                         !typeof(ISystem).IsAssignableFrom(depType)))
+            var dependencies = system.GetDependencies();
+            if (dependencies != null)
             {
-                AesirArchitectureLog.Error(
-                    $"System [{typeof(TSystem).Name}] 声明了非法依赖项 [{depType.Name}]：System 模块只能依赖 IModel 或 ISystem 的子类。");
+                foreach (var depType in dependencies.Where(depType =>
+                             !typeof(IModel).IsAssignableFrom(depType) &&
+                             !typeof(ISystem).IsAssignableFrom(depType)))
+                {
+                    throw new InvalidOperationException(
+                        $"{AesirArchitectureLog.ErrorTag} System [{typeof(TSystem).Name}] 声明了非法依赖项 [{depType.Name}]：System 模块只能依赖 IModel 或 ISystem 的子类。");
+                }
             }
 
             system.SetContext(this);
@@ -155,7 +158,7 @@ namespace Runestone.AesirArchitecture
         protected virtual void OnDispose() { }
 
         /// <summary>
-        /// 检查 Model 的依赖项是否已全部注册且初始化。未注册或未初始化则直接报错。
+        /// 检查 Model 的依赖项是否已全部注册且初始化。未注册或未初始化则抛出 InvalidOperationException。
         /// </summary>
         void CheckModelDependenciesInitialized(Type moduleType, HashSet<Type> dependencies)
         {
@@ -169,22 +172,20 @@ namespace Runestone.AesirArchitecture
                 var dep = _modelContainer.GetByType(depType);
                 if (dep == null)
                 {
-                    AesirArchitectureLog.Error("Context",
-                        $"Model [{moduleType.Name}] 依赖的 [{depType.Name}] 未在容器中注册。");
+                    throw new InvalidOperationException(
+                        $"{AesirArchitectureLog.ErrorTag} Model [{moduleType.Name}] 依赖的 [{depType.Name}] 未在容器中注册。");
                 }
 
-                if (dep != null && dep.Initialized)
+                if (!dep.Initialized)
                 {
-                    continue;
+                    throw new InvalidOperationException(
+                        $"{AesirArchitectureLog.ErrorTag} Model [{moduleType.Name}] 依赖的 [{depType.Name}] 尚未初始化，请调整注册顺序确保被依赖项先注册。");
                 }
-
-                AesirArchitectureLog.Error("Context",
-                    $"Model [{moduleType.Name}] 依赖的 [{depType.Name}] 尚未初始化，请调整注册顺序确保被依赖项先注册。");
             }
         }
 
         /// <summary>
-        /// 检查 System 的依赖项是否已全部注册且初始化。未注册或未初始化则直接报错。
+        /// 检查 System 的依赖项是否已全部注册且初始化。未注册或未初始化则抛出 InvalidOperationException。
         /// </summary>
         void CheckSystemDependenciesInitialized(Type moduleType, HashSet<Type> dependencies)
         {
@@ -200,14 +201,14 @@ namespace Runestone.AesirArchitecture
                     var modelDep = _modelContainer.GetByType(depType);
                     if (modelDep == null)
                     {
-                        AesirArchitectureLog.Error("Context",
-                            $"System [{moduleType.Name}] 依赖的 [{depType.Name}] 未在容器中注册。");
+                        throw new InvalidOperationException(
+                            $"{AesirArchitectureLog.ErrorTag} System [{moduleType.Name}] 依赖的 [{depType.Name}] 未在容器中注册。");
                     }
 
-                    if (modelDep != null && !modelDep.Initialized)
+                    if (!modelDep.Initialized)
                     {
-                        AesirArchitectureLog.Error("Context",
-                            $"System [{moduleType.Name}] 依赖的 [{depType.Name}] 尚未初始化，请调整注册顺序确保被依赖项先注册。");
+                        throw new InvalidOperationException(
+                            $"{AesirArchitectureLog.ErrorTag} System [{moduleType.Name}] 依赖的 [{depType.Name}] 尚未初始化，请调整注册顺序确保被依赖项先注册。");
                     }
                 }
                 else
@@ -215,14 +216,14 @@ namespace Runestone.AesirArchitecture
                     var systemDep = _systemContainer.GetByType(depType);
                     if (systemDep == null)
                     {
-                        AesirArchitectureLog.Error("Context",
-                            $"System [{moduleType.Name}] 依赖的 [{depType.Name}] 未在容器中注册。");
+                        throw new InvalidOperationException(
+                            $"{AesirArchitectureLog.ErrorTag} System [{moduleType.Name}] 依赖的 [{depType.Name}] 未在容器中注册。");
                     }
 
-                    if (systemDep != null && !systemDep.Initialized)
+                    if (!systemDep.Initialized)
                     {
-                        AesirArchitectureLog.Error("Context",
-                            $"System [{moduleType.Name}] 依赖的 [{depType.Name}] 尚未初始化，请调整注册顺序确保被依赖项先注册。");
+                        throw new InvalidOperationException(
+                            $"{AesirArchitectureLog.ErrorTag} System [{moduleType.Name}] 依赖的 [{depType.Name}] 尚未初始化，请调整注册顺序确保被依赖项先注册。");
                     }
                 }
             }

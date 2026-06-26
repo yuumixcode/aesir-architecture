@@ -7,7 +7,7 @@ namespace Runestone.AesirArchitecture
     /// AesirArchitecture 内部日志工具。
     /// <para>
     /// 所有架构模块的日志输出应走此工具，以醒目的颜色和 [AesirArchitecture] 标识区分来源。
-    /// 打包后调用点会被编译器完整剔除，零运行时开销。
+    /// Log/Warning 通过 [Conditional] 在打包时自动剔除；Error 始终保留。
     /// </para>
     /// </summary>
     public static class AesirArchitectureLog
@@ -15,6 +15,11 @@ namespace Runestone.AesirArchitecture
         const string Tag = "<color=#00FF88><b>[AesirArchitecture]</b></color>";
         const string TagWarning = "<color=#FFA500><b>[AesirArchitecture]</b></color>";
         const string TagError = "<color=#FF4444><b>[AesirArchitecture]</b></color>";
+
+        /// <summary>
+        /// Error 级别的富文本标签，供异常消息复用以保持控制台输出风格一致。
+        /// </summary>
+        public const string ErrorTag = TagError;
         const string TagTest = "<color=#00BFFF><b>[AesirArchitectureTest]</b></color>";
 
         /// <summary>

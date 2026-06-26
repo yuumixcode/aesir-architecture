@@ -13,7 +13,7 @@ namespace Runestone.AesirArchitecture
     {
         readonly Action<IContext> _configure;
 
-        /// <param name="configure">配置回调，在回调中注册 Model</param>
+        /// <param name="configure">配置回调，在回调中注册 Model 和 System</param>
         public MockContext(Action<IContext> configure)
         {
             _configure = configure ?? throw new ArgumentNullException(nameof(configure));

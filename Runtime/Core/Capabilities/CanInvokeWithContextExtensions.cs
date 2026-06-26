@@ -1,8 +1,7 @@
 namespace Runestone.AesirArchitecture
 {
     /// <summary>
-    /// 事件发布能力扩展方法。提供 <see cref="MiniEventBus" /> 上的便捷操作，
-    /// 以及 <see cref="ICanInvokeWithContext" /> / <see cref="ICanSubscribeWithContext" /> 能力接口的上下文路由扩展。
+    /// 事件发布能力扩展方法。提供 <see cref="ICanInvokeWithContext" /> 能力接口的上下文路由扩展。
     /// </summary>
     public static class CanInvokeWithContextExtensions
     {

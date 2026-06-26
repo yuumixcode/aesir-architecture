@@ -8,7 +8,7 @@ namespace Runestone.AesirArchitecture
     public static class CanExecuteCommandExtensions
     {
         /// <summary>
-        /// 执行命令
+        /// 执行带参命令
         /// </summary>
         public static void ExecuteCommand<T>(this ICanExecuteCommand self, T command) where T : ICommand
         {
@@ -38,7 +38,7 @@ namespace Runestone.AesirArchitecture
         }
 
         /// <summary>
-        /// 异步执行命令
+        /// 异步执行带参命令
         /// </summary>
         public static async Task ExecuteCommandAsync<T>(this ICanExecuteCommand self, T command)
             where T : IAsyncCommand

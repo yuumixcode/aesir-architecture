@@ -1,18 +1,20 @@
 {
-  "name": "Runestone.AesirArchitecture.Editor",
-  "rootNamespace": "Runestone.AesirArchitecture.Editor",
-  "references": [
-    "Runestone.AesirArchitecture.Runtime"
-  ],
-  "includePlatforms": [
-    "Editor"
-  ],
-  "excludePlatforms": [],
-  "allowAnyCode": false,
-  "overrideReferences": false,
-  "precompiledReferences": [],
-  "autoReferenced": true,
-  "defineConstraints": [],
-  "versionDefines": [],
-  "noEngineReferences": false
+    "name": "Runestone.AesirArchitecture.Editor",
+    "rootNamespace": "Runestone.AesirArchitecture.Editor",
+    "references": [
+        "Runestone.AesirArchitecture.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
 }
