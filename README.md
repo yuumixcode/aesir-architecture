@@ -3,7 +3,7 @@
 > 面向团结引擎 / Unity 的渐进式 MVP 架构框架，以 Unity 原生特性为一等公民。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
-[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](./CHANGELOG.md)
 [![Unity](https://img.shields.io/badge/Unity-2022.3%2B-black.svg)](https://unity.com/)
 
 ## 概述
@@ -13,12 +13,15 @@ AesirArchitecture（RAA）是一个以 **Unity 原生优先** 为核心理念的
 ### 核心特性
 
 - **PlayerLoop 原生生命周期** — 通过 `AesirArchitectureLifeCycle` 将自定义子系统注入 Unity PlayerLoop，提供 `BeforeUpdate` / `AfterUpdate` 帧回调，无需 MonoBehaviour
-- **能力接口组合** — 通过 `ICanGetModel`、`ICanExecuteCommand`、`ICanSubscribeWithContext` 等能力标记接口组合出 `IModel` / `ISystem` / `IView` / `IController` / `IPresenter`，按需暴露能力
-- **CQRS 读写分离** — `ICommand` / `IAsyncCommand` 负责写操作，`IQuery<TResult>` / `IAsyncQuery<TResult>` 负责读操作，支持同步与异步
-- **ObservableProperty 响应式属性** — Model 持有可写实例，View 通过 `IReadOnlyObservableProperty<out T>` 协变只读访问，保障层级安全
-- **MiniEventBus 类型事件总线** — 按事件类型注册/发布，支持自动注销句柄与多种生命周期绑定（GameObject 销毁、场景卸载等）
+- **能力接口组合** — 通过 `ICanGetModel`、`ICanExecuteCommand`、`ICanAddListener` 等能力标记接口组合出 `IModel` / `IService` / `IView` / `IController` / `IPresenter`，按需暴露能力
+- **命令模式** — `ICommand` / `IAsyncCommand` 负责写操作，支持同步与异步
+- **ObservableValue 响应式属性** — Model 持有可写实例，View 通过 `IReadOnlyObservableValue<out T>` 协变只读访问，保障层级安全
+- **MiniEventBus 类型事件总线** — 按事件类型注册/发布，支持自动移除监听句柄与多种生命周期绑定（GameObject 销毁、场景卸载等）
+- **依赖声明与校验** — `IModel` / `IService` 通过 `GetDependencies()` 声明依赖，注册时自动校验初始化顺序
+- **GenericLocator 泛型定位器** — 按类型注册/查询的通用定位器，替代旧版 Container，支持全局单例
+- **Inspector 可视化看板** — `ContextBoard` 展示上下文模块列表，`MiniEventBusBoard` 展示事件注册状态
 - **Domain Reload 安全** — 静态变量通过 `[RuntimeInitializeOnLoadMethod]` 显式重置，反复进出 Play Mode 无残留
-- **纯 C# 核心 + MonoBehaviour 适配** — 框架核心为纯 C# 对象，仅 `AbstractView<T>` 作为 MonoBehaviour 适配层
+- **纯 C# 核心 + MonoBehaviour 适配** — 框架核心为纯 C# 对象，`AesirView<T>` / `MonoView<T>` 作为 MonoBehaviour 适配层
 - **MVC + MVP 双模式** — `IController` 适合快速开发，`IPresenter` 提供更严格的 Model-View 隔离
 
 ### 与 QFramework 的差异
@@ -26,9 +29,9 @@ AesirArchitecture（RAA）是一个以 **Unity 原生优先** 为核心理念的
 | 维度 | QFramework | AesirArchitecture |
 |------|-----------|-------------------|
 | 生命周期 | MonoBehaviour 事件回调 | PlayerLoop 原生注入（BeforeUpdate / AfterUpdate） |
-| 架构根 | 泛型单例 `Architecture<T>` | 泛型静态单例 `Context<T>` + `MockContext` 测试隔离 |
-| 可观察属性 | `BindableProperty<T>` | `ObservableProperty<T>` + `IReadOnlyObservableProperty<out T>` 协变只读 |
-| 事件通信 | 纯 C# TypeEvent | 纯 C# MiniEventHub + 委托（不使用 `event` 关键字） |
+| 架构根 | 泛型单例 `Architecture<T>` | 泛型静态单例 `AbstractContext<T>` + `GenericLocator` 全局定位 |
+| 可观察属性 | `BindableProperty<T>` | `ObservableValue<T>` + `IReadOnlyObservableValue<out T>` 协变只读 |
+| 事件通信 | 纯 C# TypeEvent | 纯 C# MiniEventBus + 委托（不使用 `event` 关键字） |
 | 日志 | `Debug.Log` | `AesirArchitectureLog` 条件编译统一日志 |
 | 静态状态 | 无 Domain Reset 保障 | `[RuntimeInitializeOnLoadMethod]` 显式重置 |
 | 表现层 | 无明确抽象 | `IView` 只读契约 + `IController` / `IPresenter` 双模式 |
@@ -54,7 +57,7 @@ https://github.com/yuumixcode/aesir-architecture.git
 ```csharp
 using Runestone.AesirArchitecture;
 
-public class CounterContext : Context<CounterContext>
+public class CounterContext : AbstractContext<CounterContext>
 {
     protected override void Configure()
     {
@@ -68,7 +71,7 @@ public class CounterContext : Context<CounterContext>
 ```csharp
 public interface ICounterModel : IModel
 {
-    IReadOnlyObservableProperty<int> Count { get; }
+    IReadOnlyObservableValue<int> Count { get; }
     void Increase();
     void Decrease();
     void Reset();
@@ -76,9 +79,9 @@ public interface ICounterModel : IModel
 
 public sealed class CounterModel : AbstractModel, ICounterModel
 {
-    readonly ObservableProperty<int> _count = new ObservableProperty<int>(0);
+    readonly ObservableValue<int> _count = new ObservableValue<int>(0);
 
-    public IReadOnlyObservableProperty<int> Count => _count;
+    public IReadOnlyObservableValue<int> Count => _count;
 
     public void Increase() => _count.Value++;
     public void Decrease() => _count.Value--;
@@ -91,7 +94,7 @@ public sealed class CounterModel : AbstractModel, ICounterModel
 ### 3. 定义 View（MVC 模式）
 
 ```csharp
-public class UICounterMvcPanel : AbstractView<CounterContext>
+public class UICounterMvcPanel : AesirView<CounterContext>
 {
     [SerializeField] Text countText;
     [SerializeField] Button increaseButton;
@@ -102,8 +105,8 @@ public class UICounterMvcPanel : AbstractView<CounterContext>
     void Awake()
     {
         _model = this.GetModel<ICounterModel>();
-        _model.Count.Subscribe(UpdateCountText)
-                   .UnsubscribeWhenGameObjectOnDestroyed(gameObject);
+        _model.Count.AddListener(UpdateCountText)
+                   .RemoveListenerWhenGameObjectOnDestroyed(gameObject);
         _ctrl = new CounterController(_model);
     }
 
@@ -114,7 +117,7 @@ public class UICounterMvcPanel : AbstractView<CounterContext>
 }
 ```
 
-### 4. 使用 Command / Query
+### 4. 使用 Command
 
 ```csharp
 // 定义命令
@@ -129,14 +132,6 @@ public class AddScoreCommand : AbstractCommand
 
 // 执行命令
 this.ExecuteCommand<AddScoreCommand>();
-
-// 查询
-public class GetScoreQuery : AbstractQuery<int>
-{
-    protected override int OnExecute() => this.GetModel<IScoreModel>().Score;
-}
-
-int score = this.ExecuteQuery<GetScoreQuery, int>();
 ```
 
 ### 5. 使用事件总线
@@ -148,25 +143,31 @@ public struct ScoreChangedEvent : IEventArgs
     public int NewScore;
 }
 
-// 订阅
-this.Subscribe<ScoreChangedEvent>(e => Debug.Log($"Score: {e.NewScore}"))
-    .UnsubscribeWhenGameObjectOnDestroyed(gameObject);
+// 添加监听
+this.AddListener<ScoreChangedEvent>(e => Debug.Log($"Score: {e.NewScore}"))
+    .RemoveListenerWhenGameObjectOnDestroyed(gameObject);
 
 // 发布
-this.Invoke<ScoreChangedEvent>(); // 无参构造
+this.InvokeEvent(new ScoreChangedEvent { NewScore = 100 });
 ```
 
 ## 架构总览
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                   Context<T>                    │
+│               AbstractContext<T>                 │
 │     (泛型静态单例 + Domain Reset)                │
 │                                                  │
 │  ┌──────────┐  ┌──────────┐  ┌───────────────┐ │
-│  │  Models  │  │ Systems  │  │  MiniEventHub │ │
-│  │          │  │          │  │   (Event Bus)  │ │
+│  │  Models  │  │ Services │  │ MiniEventBus  │ │
+│  │          │  │          │  │   (Global)    │ │
 │  └──────────┘  └──────────┘  └───────────────┘ │
+│  ┌──────────────────────────────────────────────┐│
+│  │       GenericLocator<T> (类型定位器)         ││
+│  └──────────────────────────────────────────────┘│
+│  ┌──────────────────────────────────────────────┐│
+│  │    ContextBoard / MiniEventBusBoard (可视化) ││
+│  └──────────────────────────────────────────────┘│
 └──────────────────┬──────────────────────────────┘
                    │ 能力接口组合
      ┌─────────────┼─────────────┐
@@ -178,26 +179,26 @@ this.Invoke<ScoreChangedEvent>(); // 无参构造
      │             │             │
      ▼             ▼             ▼
 ┌──────────────────────────────────────┐
-│        AbstractView<T> : MonoBehaviour│
-│         (MonoBehaviour 适配层)          │
+│   AesirView<T> / MonoView<T>         │
+│        (MonoBehaviour 适配层)          │
 └──────────────────────────────────────┘
                    │
                    ▼
 ┌──────────────────────────────────────┐
-│     AesirArchitectureLifeCycle        │
+│     AesirArchitecturePlayerLoop       │
 │  (PlayerLoop 原生注入: Before/After)   │
 └──────────────────────────────────────┘
 ```
 
 ### 能力矩阵
 
-| 模块 | GetModel | GetSystem | ExecuteCommand | ExecuteQuery | Subscribe | Invoke | Initialize | Dispose |
-|------|:--------:|:---------:|:--------------:|:------------:|:---------:|:------:|:----------:|:-------:|
-| **IModel** | ✓ | | | | | ✓ | ✓ | ✓ |
-| **ISystem** | ✓ | ✓ | ✓ | ✓ | | ✓ | ✓ | ✓ |
-| **IView** | ✓ | | | ✓ | ✓ | | | |
-| **IController** | ✓ | ✓ | ✓ | ✓ | ✓ | | | |
-| **IPresenter** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
+| 模块 | GetModel | GetService | ExecuteCommand | AddListener | InvokeEvent | Initialize | Dispose |
+|------|:--------:|:---------:|:--------------:|:---------:|:----------:|:----------:|:-------:|
+| **IModel** | ✓ | | | | ✓ | ✓ | ✓ |
+| **IService** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **IView** | ✓ | ✓ | | ✓ | ✓ | | |
+| **IController** | ✓ | ✓ | ✓ | ✓ | | | |
+| **IPresenter** | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
 
 ## 项目结构
 
@@ -210,24 +211,50 @@ cn.runestone.aesir.architecture/
 ├── .gitignore
 ├── Runtime/
 │   ├── Runestone.AesirArchitecture.asmdef
-│   ├── Core/
-│   │   ├── Context/          # IContext, Context<T>, BaseContext, MockContext
-│   │   ├── Module/           # IModel, ISystem, IView, IController, IPresenter + Abstract 基类
-│   │   ├── Capabilities/      # ICan* 能力标记接口 + Extension 方法
-│   │   ├── AesirArchitecture.cs            # 架构入口静态类
-│   │   ├── AesirArchitectureLifeCycle.cs   # PlayerLoop 注入
-│   │   ├── AesirArchitectureLog.cs         # 统一日志
-│   │   ├── AssemblyVisibleSettings.cs     # InternalsVisibleTo 声明
-│   │   ├── Container.cs                   # 模块容器
-│   │   └── SingletonMonoBehaviour.cs      # 单例 MonoBehaviour 基类
-│   ├── Command/              # ICommand, IAsyncCommand + Abstract 基类
-│   ├── Query/                # IQuery<TResult>, IAsyncQuery<TResult> + Abstract 基类
-│   ├── Event/                # MiniEventBus, MiniEvent<T> + 生命周期绑定扩展
-│   ├── Observable/           # ObservableProperty<T>, IReadOnlyObservableProperty<T>
-│   └── Utilities/            # PlayerLoopUtility
+│   ├── Engine/                    # 纯 C# + 使用 UnityEngine API（不依赖 MonoBehaviour）
+│   │   ├── Common/
+│   │   │   ├── AesirArchitectureLog.cs         # 统一日志
+│   │   │   ├── AesirArchitecturePlayerLoop.cs  # PlayerLoop 注入
+│   │   │   ├── AssemblyInfo.cs                 # InternalsVisibleTo 声明
+│   │   │   └── GenericResetStaticsAssistant.cs # 静态变量重置助手
+│   │   ├── Core/
+│   │   │   ├── Context/           # IContext, AbstractContext<T>, ContextDependencyAssistant
+│   │   │   ├── Modules/           # IModel, IService, IView, IController, IPresenter + Abstract 基类
+│   │   │   │   ├── Interfaces/    # 模块接口
+│   │   │   │   └── Abstracts/     # 模块抽象基类
+│   │   │   └── Capabilities/      # ICan* 能力标记接口 + Extension 方法
+│   │   │       ├── Interfaces/
+│   │   │       └── Extensions/
+│   │   ├── Event/                 # MiniEventBus, MiniEvent<T>, AutoRemoveListenerHandle
+│   │   ├── Observable/           # ObservableValue<T>, IReadOnlyObservableValue<T>
+│   │   ├── Locator/              # GenericLocator<T>, ILocator
+│   │   └── Utilities/            # PlayerLoopUtility
+│   ├── Component/                # MonoBehaviour 组件（依赖 MonoBehaviour）
+│   │   ├── Common/
+│   │   │   ├── AesirArchitecture.cs       # 框架 MonoBehaviour 单例入口
+│   │   │   └── AesirMonoBehaviour.cs      # Odin 自动适配基类
+│   │   ├── Core/
+│   │   │   ├── AesirView.cs              # Odin 适配 View 基类
+│   │   │   ├── MonoView.cs               # 纯 MonoBehaviour View 基类
+│   │   │   └── ContextBoard.cs           # 上下文 Inspector 可视化看板
+│   │   ├── Event/
+│   │   │   ├── MiniEventBusBoard.cs      # 事件总线 Inspector 可视化看板
+│   │   │   ├── RemoveListenerTrigger.cs  # 自动移除监听触发器基类
+│   │   │   ├── RemoveListenerOnDestroyTrigger.cs
+│   │   │   ├── RemoveListenerOnDisableTrigger.cs
+│   │   │   ├── RemoveListenerOnSceneUnloadedTrigger.cs
+│   │   │   └── RemoveListenerExtensions.cs
+│   │   └── ScriptableObject/
+│   │       └── AesirScriptableObject.cs  # Odin 自动适配 SO 基类
+│   └── OdinIntergration/         # 独立程序集（依赖 Odin Inspector）
+│       └── Runestone.AesirArchitecture.OdinIntegration.asmdef
 ├── Editor/
 │   ├── Runestone.AesirArchitecture.Editor.asmdef
-│   └── OdinIntegration/      # Odin Inspector 集成（可选）
+│   ├── Common/
+│   │   └── EnsureAesirArchitectureDefine.cs  # 编译符号管理
+│   ├── Utilities/
+│   │   └── ScriptingSymbolUtility.cs
+│   └── OdinIntegration/          # Odin Inspector 集成（可选）
 │       └── Runestone.AesirArchitecture.Editor.OdinIntegration.asmdef
 ├── Tests/
 │   ├── Runtime/
@@ -235,11 +262,16 @@ cn.runestone.aesir.architecture/
 │   └── Editor/
 │       └── Runestone.AesirArchitecture.Tests.Editor.asmdef
 ├── Samples~/
-│   ├── UI-Counter-MVC/       # MVC 模式计数器 Demo
-│   ├── UI-Counter-MVP/       # MVP 模式计数器 Demo
-│   └── ObservableProperty/  # ObservableProperty Inspector 演示（Odin Inspector）
+│   ├── Counter-MVC/             # MVC 模式计数器 Demo
+│   ├── Counter-MVP/             # MVP 模式计数器 Demo
+│   ├── ObservableValue/         # ObservableValue Inspector 演示（Odin Inspector）
+│   └── MiniEvent/               # MiniEvent 使用案例
 └── Documentation~/
-    └── aesir-architecture.md
+    ├── aesir-architecture.md    # 主手册
+    ├── Books/                   # 参考电子书
+    ├── FAQ/                     # 常见问题
+    ├── Manuals/                 # 模块手册
+    └── Rules/                   # 代码规范
 ```
 
 ## 设计原则
@@ -255,11 +287,13 @@ cn.runestone.aesir.architecture/
 
 - [x] 核心 MVP / MVC 分层
 - [x] PlayerLoop 原生生命周期注入
-- [x] CQRS 命令/查询分离
-- [x] ObservableProperty 响应式属性
-- [x] MiniEventHub 类型事件总线
+- [x] 命令模式（同步 + 异步）
+- [x] ObservableValue 响应式属性
+- [x] MiniEventBus 类型事件总线
+- [x] GenericLocator 泛型定位器
+- [x] 依赖声明与校验机制
+- [x] Inspector 可视化看板（ContextBoard / MiniEventBusBoard）
 - [x] Domain Reload 安全
-- [x] MockContext 测试隔离
 - [ ] ScriptableObject 可视化配置层
 - [ ] SO EventChannel 事件通道
 - [ ] Editor 工具链（SO Inspector / MVP 脚手架 / 模块可视化）

@@ -7,6 +7,9 @@ using UnityEngine.TestTools;
 
 namespace Runestone.AesirArchitecture.Tests
 {
+    /// <summary>
+    /// 验证 UnityEngine.Object 派生类在各种场景下的 null 检查语义与行为的测试类
+    /// </summary>
     public class UnityEngineObjectCheckNullTests
     {
         /// <summary>

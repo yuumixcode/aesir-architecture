@@ -38,9 +38,9 @@
 | 标识符 | 样式 | 示例 |
 |--------|------|------|
 | 命名空间 | `PascalCase`，统一在 `Runestone.AesirArchitecture` 下 | `Runestone.AesirArchitecture` |
-| 类 | `UpperCamelCase`（PascalCase），名词/名词短语 | `AesirLifeCycle`, `ObservableProperty<T>` |
+| 类 | `UpperCamelCase`（PascalCase），名词/名词短语 | `AesirLifeCycle`, `ObservableValue<T>` |
 | 公共 API 类 | `UpperCamelCase`，加 `Aesir` 前缀 | `AesirLifeCycle` |
-| 接口 | `I` + `UpperCamelCase`，后接形容词 | `IObservableProperty<T>`, `IDamageable` |
+| 接口 | `I` + `UpperCamelCase`，后接形容词 | `IObservableValue<T>`, `IDamageable` |
 | 枚举（普通） | `UpperCamelCase` 单数名词，值无前缀后缀 | `WeaponType.Knife` |
 | 枚举（Flags） | `UpperCamelCase` **复数**名词 | `AttackModes.Melee` |
 | 枚举成员 | `UpperCamelCase` | `Awake`, `OnEnable` |
@@ -387,7 +387,7 @@ public void Register(AesirArchitectureLifeCyclePhase phase, Action callback, int
 
 /// <summary>
 /// 可观察属性。值变更时触发 <see cref="ValueChanged"/> 事件通知订阅者。
-/// <para>Model 层持有可写实例，View 层通过 <see cref="IReadOnlyObservableProperty{T}"/> 只读访问。</para>
+/// <para>Model 层持有可写实例，View 层通过 <see cref="IReadOnlyObservableValue{T}"/> 只读访问。</para>
 /// </summary>
 /// <typeparam name="T">
 /// 属性值类型
@@ -629,7 +629,7 @@ menu__shop-button
 
 - 一个文件一个主类型，文件名 = 类型名（含泛型时不加 `` `1 `` 后缀）
 - MonoBehaviour 文件名**必须与类名匹配**
-- 示例：`AesirLifeCycle.cs`, `ObservableProperty.cs`, `IObservableProperty.cs`
+- 示例：`AesirLifeCycle.cs`, `ObservableValue.cs`, `IObservableValue.cs`
 
 ---
 
@@ -716,26 +716,6 @@ public IEnumerator ExecuteCommandAsync_ModifiesModelState()
 }
 ```
 
-带返回值的异步测试使用 `TaskEnumerator<T>`，通过回调获取结果：
-
-```csharp
-/// <summary>
-/// 验证异步查询正确返回结果
-/// </summary>
-[UnityTest]
-public IEnumerator ExecuteQueryAsync_ReturnsCorrectResult()
-{
-    _controller.ExecuteCommand<IncreaseCountCommand>();
-
-    int result = 0;
-    yield return new TaskEnumerator<int>(
-        _controller.ExecuteQueryAsync<GetCountAsyncQuery, int>(), r => result = r);
-
-    Assert.AreEqual(1, result);
-    AesirArchitectureLog.TestLog("ExecuteQueryAsync: 异步查询正确返回结果");
-}
-```
-
 `TaskEnumerator` 实现模板：
 
 ```csharp
@@ -751,36 +731,6 @@ class TaskEnumerator : IEnumerator
     public object Current => null;
 
     public bool MoveNext() => !_task.IsCompleted;
-
-    public void Reset() => throw new NotSupportedException();
-}
-
-/// <summary>
-/// 将 Task{T} 转为 IEnumerator，完成后通过 callback 回传结果。
-/// </summary>
-class TaskEnumerator<T> : IEnumerator
-{
-    readonly Task<T> _task;
-    readonly Action<T> _onComplete;
-
-    public TaskEnumerator(Task<T> task, Action<T> onComplete)
-    {
-        _task = task;
-        _onComplete = onComplete;
-    }
-
-    public object Current => null;
-
-    public bool MoveNext()
-    {
-        if (!_task.IsCompleted)
-        {
-            return true;
-        }
-
-        _onComplete(_task.Result);
-        return false;
-    }
 
     public void Reset() => throw new NotSupportedException();
 }

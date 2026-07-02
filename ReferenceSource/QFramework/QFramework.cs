@@ -955,12 +955,4 @@ namespace QFramework
     }
 
     #endregion
-
-#if UNITY_EDITOR
-    internal class EditorMenus
-    {
-        // [MenuItem("QFramework/Install QFrameworkWithToolKits")]
-        public static void InstallPackageKit() => Application.OpenURL("https://qframework.cn/qf");
-    }
-#endif
 }
