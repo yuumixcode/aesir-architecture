@@ -1,6 +1,6 @@
 # Aesir Architecture 使用手册
 
-> **版本**: 0.2.0 | **Unity**: 2022.3+ | **命名空间**: `Runestone.AesirArchitecture`
+> **版本**: 0.2.1 | **Unity**: 2022.3+ | **命名空间**: `Runestone.AesirArchitecture`
 
 ---
 

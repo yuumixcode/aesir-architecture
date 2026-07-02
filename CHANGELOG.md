@@ -14,6 +14,12 @@
 - Editor 工具链（SO Inspector / MVP 脚手架 / 模块可视化）
 - 运行时集合（RuntimeSet）
 
+## [0.2.1] - 2026-07-02
+
+### Added
+
+- **第三方说明文档** — 新增 `Third Party Notices.md`（UPM 标准），声明 QFramework MIT 许可证归属
+
 ## [0.2.0] - 2026-07-02
 
 ### Changed

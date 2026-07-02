@@ -26,6 +26,9 @@
 ehthumbs.db
 Thumbs.db
 
+# WorkBuddy
+.workbuddy/
+
 # Unity meta files for tilde-suffixed folders (not needed, Unity ignores these folders)
 # Samples~ and Documentation~ don't need .meta at the root level
 # but .meta files inside them are preserved for sample import GUIDs
