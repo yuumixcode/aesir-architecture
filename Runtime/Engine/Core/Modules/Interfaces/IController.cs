@@ -1,13 +1,12 @@
 namespace Runestone.AesirArchitecture
 {
     /// <summary>
-    /// 表现层控制器接口。Controller 层可通过此接口执行命令、获取 Model 和 Service、添加事件监听。
+    /// 表现层控制器接口。Controller 层可通过此接口执行命令、获取 Model 和 Service
     /// <para>
-    /// 能力：GetModel, GetService, AddListener, ExecuteCommand
+    /// 能力：GetModel, GetService, ExecuteCommand
     /// </para>
     /// </summary>
-    public interface IController : IContextHolder, ICanGetModel, ICanGetService, ICanExecuteCommand,
-        ICanAddListener { }
+    public interface IController : IContextHolder, ICanGetModel, ICanGetService, ICanExecuteCommand { }
 
     /// <summary>
     /// 泛型控制器接口。绑定指定上下文类型，实现者自动获得 <see cref="IContextHolder.Context" /> 绑定。

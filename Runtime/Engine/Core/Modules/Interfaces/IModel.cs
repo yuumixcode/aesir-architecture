@@ -6,7 +6,6 @@ namespace Runestone.AesirArchitecture
     /// 能力：GetModel, Invoke
     /// </para>
     /// </summary>
-    public interface IModel : IContextHolder, ICanSetContext, ICanGetModel, ICanInvokeEvent, ICanInitialize
-    {
-    }
+    public interface IModel : IContextHolder, ICanSetContext, ICanGetModel, ICanInvokeEvent,
+        ICanInitialize { }
 }
