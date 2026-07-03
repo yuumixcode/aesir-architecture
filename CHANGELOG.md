@@ -14,6 +14,40 @@
 - Editor 工具链（SO Inspector / MVP 脚手架 / 模块可视化）
 - 运行时集合（RuntimeSet）
 
+## [0.3.0] - 2026-07-03
+
+### Changed
+
+- **Engine 层彻底脱离 Component 层** — 移除 `ContextBoard` 和 `MiniEventBusBoard` 两个 MonoBehaviour 组件，移除 `AbstractContext` 中所有对 `ContextBoard.Instance.AddContext()` 的调用。Engine 层现在是真正的纯 C#，不依赖任何 Component 层类型
+- **移除声明式依赖校验** — 移除 `IModel.GetDependencies()` / `IService.GetDependencies()` 和 `ContextDependencyAssistant` 类，改用 `GetModel<T>()` / `GetService<T>()` 扩展方法中的运行时错误日志。未注册时抛出含调用者类型和目标类型信息的 `InvalidOperationException`，兼容运行时替换 Model 的调试模式
+- **提取 AbstractSubmodule 基类** — 将 `AbstractModel` 和 `AbstractService` 的公共生命周期逻辑（`_context`、`SetContext`、`Initialized`、`Initialize`、`Dispose`、`OnInitialize`、`OnDispose`）提取到 `AbstractSubmodule` 基类，消除代码重复
+- **能力接口文件合并** — 将 13 个碎片化的 `ICan*` 接口和扩展方法文件合并为 `Capabilities.cs` 和 `CapabilityExtensions.cs`，逻辑零改动
+- **MiniEventBus.EventDictionary 封装** — 从 `public` 改为 `private`，值类型从 `object` 改为 `Delegate`，移除 `Clear()` 中对 `Delegate` 的无效 `IDisposable` 转型
+- **IService 角色定位明确** — 修正注释，明确定位为万能协调层（能读写 Model、调用其他 Service、监听和发布事件），确认不包含 `ICanExecuteCommand`
+- **IView 描述修正** — 移除"只读"描述，明确 View 可通过事件向上通信、可读取 Model/Service、不可执行 Command 或修改 Model 状态
+- **GenericResetStaticsAssistant → ResetStaticsAssistant** — 重命名，移除 "Generic" 前缀，类名更简洁
+- **AbstractContext 不再注册到 GenericLocator\<IContext\>** — 移除 `Interface` 属性中的 `GenericLocator<IContext>.Global.Register/Unregister` 调用
+
+### Added
+
+- **运行时错误日志** — `GetModel<T>()` 和 `GetService<T>()` 扩展方法在目标未注册时抛出含调用者类型和目标类型信息的异常，格式示例：`[InventoryModel] 尝试获取 Model [ItemDefinitionModel]，但该 Model 未在 Context 中注册`
+- **AbstractSubmodule** — 子模块统一基类，承载 Model 和 Service 的公共生命周期逻辑
+
+### Fixed
+
+- **RemoveListenerOnSceneUnloadedTrigger 域重置** — 静态字段 `_instance` 未注册到 `ResetStaticsAssistant`，Disable Domain Reload 下反复进出 Play Mode 会残留旧引用。已通过静态构造函数注册回调修复
+
+### Removed
+
+- **ContextBoard** — 上下文看板 MonoBehaviour 组件（Engine 层不再依赖 Component 层）
+- **MiniEventBusBoard** — 事件总线看板 MonoBehaviour 组件
+- **ContextBoardAttributeProcessor / MiniEventBusBoardAttributeProcessor** — 对应 Odin AttributeProcessor
+- **ContextDependencyAssistant** — 依赖项校验辅助类
+- **Locator / ILocator** — 非泛型定位器死代码（框架内零引用）
+- **IMiniEventBus** — 事件总线接口（`MiniEventBus` 不再实现接口）
+- **EventRegistrationInfo** — 事件注册信息数据类（随 `MiniEventBusBoard` 移除）
+- **AbstractModelAttributeProcessor** — Model 属性处理器（随可视化组件移除）
+
 ## [0.2.1] - 2026-07-02
 
 ### Added

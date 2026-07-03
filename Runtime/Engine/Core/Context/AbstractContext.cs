@@ -27,7 +27,6 @@ namespace Runestone.AesirArchitecture
 
                 var instance = new T();
                 instance.Initialize();
-                GenericLocator<IContext>.Global.Register(instance);
                 return instance;
             }
         }
@@ -136,7 +135,6 @@ namespace Runestone.AesirArchitecture
             _modelLocator.Clear();
 
             Initialized = false;
-            GenericLocator<IContext>.Global.Unregister<T>();
         }
 
         /// <summary>

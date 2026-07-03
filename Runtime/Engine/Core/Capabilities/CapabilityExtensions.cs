@@ -18,7 +18,7 @@ namespace Runestone.AesirArchitecture
             {
                 throw new InvalidOperationException(
                     $"{AesirArchitectureLog.ErrorTag} [{self.GetType().Name}] 尝试获取 Model [{typeof(T).Name}]，" +
-                    $"但该 Model 未在 Context 中注册。请确认已在 Configure() 中调用 RegisterModel<{typeof(T).Name}>()。");
+                    $"但该 Model 未在 Context 中注册，需要提前调用 RegisterModel<{typeof(T).Name}>() 注册到 Context 中。");
             }
 
             return model;
@@ -34,7 +34,7 @@ namespace Runestone.AesirArchitecture
             {
                 throw new InvalidOperationException(
                     $"{AesirArchitectureLog.ErrorTag} [{self.GetType().Name}] 尝试获取 Service [{typeof(T).Name}]，" +
-                    $"但该 Service 未在 Context 中注册。请确认已在 Configure() 中调用 RegisterService<{typeof(T).Name}>()。");
+                    $"但该 Service 未在 Context 中注册，需要提前调用 RegisterService<{typeof(T).Name}>() 注册到 Context 中。");
             }
 
             return service;

@@ -17,7 +17,7 @@ namespace Runestone.AesirArchitecture
 
         static GenericLocator()
         {
-            GenericResetStaticsAssistant.Register(ResetStaticsOnDisableDomainReload);
+            ResetStaticsAssistant.Register(ResetStaticsOnDisableDomainReload);
         }
 
         /// <summary>

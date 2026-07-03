@@ -15,7 +15,7 @@ namespace Runestone.AesirArchitecture
 
         static RemoveListenerOnSceneUnloadedTrigger()
         {
-            GenericResetStaticsAssistant.Register(() => _instance = null);
+            ResetStaticsAssistant.Register(() => _instance = null);
         }
 
         readonly Dictionary<string, RemoveListenerHandleCollection> _sceneHandles =
