@@ -1,13 +1,13 @@
 namespace Runestone.AesirArchitecture
 {
     /// <summary>
-    /// 服务层接口。封装跨模块业务逻辑，协调模块间交互与通信。
+    /// 服务层接口。万能协调层，封装跨模块业务逻辑，协调模块间交互与通信。
     /// <para>
-    /// IService 是主动式的——被外部调用执行跨模块的协调逻辑，通过 <see cref="ICanGetModel" /> 访问数据，
-    /// 通过 <see cref="ICanInvokeEvent" /> 发布业务事件。
+    /// Service 能读写 Model、调用其他 Service、监听和发布事件，完成跨模块协调。
+    /// 不包含 <see cref="ICanExecuteCommand" />——Command 的执行入口应由 Controller/Presenter 触发。
     /// </para>
     /// <para>
-    /// 能力：GetModel, GetService, Invoke, AddListener, Initialize, Dispose
+    /// 能力：GetModel, GetService, InvokeEvent, AddListener, Initialize, Dispose
     /// </para>
     /// </summary>
     public interface IService : IContextHolder, ICanSetContext, ICanGetModel, ICanGetService, ICanInvokeEvent,
