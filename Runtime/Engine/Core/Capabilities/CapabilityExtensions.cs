@@ -61,6 +61,12 @@ namespace Runestone.AesirArchitecture
             self.Context.InvokeEvent(e);
 
         /// <summary>
+        /// 通过上下文事件总线发布无参事件
+        /// </summary>
+        public static void InvokeEvent<T>(this ICanInvokeEvent self) where T : IEventArgs, new() =>
+            self.Context.InvokeEvent<T>();
+
+        /// <summary>
         /// 执行带参命令
         /// </summary>
         public static void ExecuteCommand<T>(this ICanExecuteCommand self, T command) where T : ICommand

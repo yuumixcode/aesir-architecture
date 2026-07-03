@@ -110,6 +110,12 @@ namespace Runestone.AesirArchitecture
             MiniEventBus.Global.InvokeEvent(args);
 
         /// <summary>
+        /// 发布无参事件
+        /// </summary>
+        public void InvokeEvent<TEvent>() where TEvent : IEventArgs, new() =>
+            MiniEventBus.Global.InvokeEvent<TEvent>();
+
+        /// <summary>
         /// 释放资源。逆序销毁 Service 和 Model，清空容器。
         /// </summary>
         public virtual void Dispose()

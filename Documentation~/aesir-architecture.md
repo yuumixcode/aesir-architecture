@@ -1,6 +1,6 @@
 # Aesir Architecture 使用手册
 
-> **版本**: 0.3.1 | **Unity**: 2022.3+ | **命名空间**: `Runestone.AesirArchitecture`
+> **版本**: 0.3.2 | **Unity**: 2022.3+ | **命名空间**: `Runestone.AesirArchitecture`
 
 ---
 
@@ -291,6 +291,9 @@ public void RemoveListener<TEvent>(Action<TEvent> listener) where TEvent : IEven
 
 // 发布事件
 public void InvokeEvent<TEvent>(TEvent args) where TEvent : IEventArgs;
+
+// 发布无参事件（T 必须有无参构造，内部创建默认实例后转发）
+public void InvokeEvent<TEvent>() where TEvent : IEventArgs, new();
 ```
 
 #### IContext 接口
@@ -308,6 +311,7 @@ public interface IContext : IDisposable
     AutoRemoveListenerHandle AddListener<T>(Action<T> listener) where T : IEventArgs;
     void RemoveListener<T>(Action<T> listener) where T : IEventArgs;
     void InvokeEvent<T>(T args) where T : IEventArgs;
+    void InvokeEvent<T>() where T : IEventArgs, new();
 }
 ```
 
@@ -447,7 +451,7 @@ public interface IPresenter : IContextHolder, ICanExecuteCommand, ICanGetModel, 
 | `ICanGetService` | `GetService<T>()` | 获取已注册的 Service |
 | `ICanExecuteCommand` | `ExecuteCommand<T>()` / `ExecuteCommandAsync<T>()` | 执行同步/异步命令 |
 | `ICanAddListener` | `AddListener<T>()` / `RemoveListener<T>()` | 添加/移除事件监听 |
-| `ICanInvokeEvent` | `InvokeEvent<T>()` | 发布事件 |
+| `ICanInvokeEvent` | `InvokeEvent<T>(T)` / `InvokeEvent<T>()` | 发布事件（带参 / 无参） |
 | `ICanSetContext` | `SetContext()` | 设置上下文引用（内部使用） |
 | `ICanInitialize` | `Initialize()` / `Initialized` | 初始化与状态标记 |
 | `IContextHolder` | `Context` | 持有的上下文（所有能力接口的基础） |
@@ -603,6 +607,10 @@ context.AddListener<ScoreChangedEvent>(e => { ... });
 ```csharp
 // 通过能力接口（ICanInvokeEvent）
 this.InvokeEvent(new ScoreChangedEvent { NewScore = 100 });
+
+// 无参事件发布（T 必须有无参构造）
+public struct GameStartedEvent : IEventArgs { }
+this.InvokeEvent<GameStartedEvent>();
 
 // 直接通过 MiniEventBus 全局单例
 MiniEventBus.Global.InvokeEvent(new ScoreChangedEvent { NewScore = 100 });
@@ -974,6 +982,7 @@ public IEnumerable<IService> GetAllServices();
 public AutoRemoveListenerHandle AddListener<TEvent>(Action<TEvent> listener) where TEvent : IEventArgs;
 public void RemoveListener<TEvent>(Action<TEvent> listener) where TEvent : IEventArgs;
 public void InvokeEvent<TEvent>(TEvent args) where TEvent : IEventArgs;
+public void InvokeEvent<TEvent>() where TEvent : IEventArgs, new();
 public override void Dispose();
 ```
 
@@ -992,6 +1001,7 @@ public interface IContext : IDisposable
     AutoRemoveListenerHandle AddListener<T>(Action<T> listener) where T : IEventArgs;
     void RemoveListener<T>(Action<T> listener) where T : IEventArgs;
     void InvokeEvent<T>(T args) where T : IEventArgs;
+    void InvokeEvent<T>() where T : IEventArgs, new();
 }
 ```
 
@@ -1161,6 +1171,7 @@ public sealed class MiniEventBus
     public AutoRemoveListenerHandle AddListener<T>(Action<T> listener) where T : IEventArgs;
     public void RemoveListener<T>(Action<T> listener) where T : IEventArgs;
     public void InvokeEvent<T>(T args) where T : IEventArgs;
+    public void InvokeEvent<T>() where T : IEventArgs, new();
     public void Clear();
 }
 ```

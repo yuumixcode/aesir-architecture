@@ -57,5 +57,10 @@ namespace Runestone.AesirArchitecture
         /// 发布事件
         /// </summary>
         void InvokeEvent<T>(T args) where T : IEventArgs;
+
+        /// <summary>
+        /// 发布无参事件
+        /// </summary>
+        void InvokeEvent<T>() where T : IEventArgs, new();
     }
 }

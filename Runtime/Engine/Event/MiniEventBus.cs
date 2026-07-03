@@ -79,6 +79,12 @@ namespace Runestone.AesirArchitecture
         }
 
         /// <summary>
+        /// 发布无参事件，内部创建默认实例后转发给 <see cref="InvokeEvent{T}(T)" />
+        /// </summary>
+        public void InvokeEvent<T>() where T : IEventArgs, new() =>
+            InvokeEvent(new T());
+
+        /// <summary>
         /// 清空所有已注册的事件
         /// </summary>
         public void Clear()

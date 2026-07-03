@@ -14,6 +14,12 @@
 - Editor 工具链（SO Inspector / MVP 脚手架 / 模块可视化）
 - 运行时集合（RuntimeSet）
 
+## [0.3.2] - 2026-07-03
+
+### Added
+
+- **无参事件发布重载** — `MiniEventBus`、`IContext`、`AbstractContext<T>`、`CapabilityExtensions` 新增 `InvokeEvent<T>() where T : IEventArgs, new()` 重载，内部创建默认实例后转发给带参版本，简化无参事件的发布调用
+
 ## [0.3.1] - 2026-07-03
 
 ### Added
