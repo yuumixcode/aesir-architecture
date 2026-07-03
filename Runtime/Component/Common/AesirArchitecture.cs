@@ -49,8 +49,6 @@ namespace Runestone.AesirArchitecture
         {
             // 强制启动 Aesir Architecture，在场景的 Awake 之前执行
             _ = Instance;
-            // 事件信息查看器，只读。
-            _ = MiniEventBusBoard.Instance;
         }
 
         /// <summary>

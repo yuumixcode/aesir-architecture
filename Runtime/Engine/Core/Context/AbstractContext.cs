@@ -28,7 +28,6 @@ namespace Runestone.AesirArchitecture
                 var instance = new T();
                 instance.Initialize();
                 GenericLocator<IContext>.Global.Register(instance);
-                ContextBoard.Instance.AddContext(instance);
                 return instance;
             }
         }
