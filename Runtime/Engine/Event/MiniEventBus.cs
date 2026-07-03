@@ -6,12 +6,12 @@ namespace Runestone.AesirArchitecture
     /// <summary>
     /// 轻量级事件总线。按事件类型注册、移除与发布监听，不依赖 MonoBehaviour。
     /// </summary>
-    public sealed class MiniEventBus : IMiniEventBus
+    public sealed class MiniEventBus
     {
         /// <summary>
         /// 全局唯一的事件总线单例
         /// </summary>
-        public static readonly MiniEventBus Global = new MiniEventBus();
+        public static MiniEventBus Global { get; private set; } = new MiniEventBus();
 
         /// <summary>
         /// 当事件注册表发生变化时触发（添加或移除监听）
@@ -21,7 +21,7 @@ namespace Runestone.AesirArchitecture
         /// <summary>
         /// 存储所有事件类型及其对应监听委托的字典
         /// </summary>
-        public Dictionary<Type, object> EventDictionary { get; } = new Dictionary<Type, object>();
+        readonly Dictionary<Type, Delegate> _eventDictionary = new Dictionary<Type, Delegate>();
 
         /// <summary>
         /// 注册事件监听，返回可自动移除的监听句柄
@@ -29,14 +29,14 @@ namespace Runestone.AesirArchitecture
         public AutoRemoveListenerHandle AddListener<T>(Action<T> listener) where T : IEventArgs
         {
             var eType = typeof(T);
-            if (EventDictionary.TryGetValue(eType, out var e))
+            if (_eventDictionary.TryGetValue(eType, out var e))
             {
                 var callback = (Action<T>)e + listener;
-                EventDictionary[eType] = callback;
+                _eventDictionary[eType] = callback;
             }
             else
             {
-                EventDictionary.Add(eType, listener);
+                _eventDictionary.Add(eType, listener);
             }
 
             OnEventRegistrationsChanged?.Invoke();
@@ -49,7 +49,7 @@ namespace Runestone.AesirArchitecture
         public void RemoveListener<T>(Action<T> listener) where T : IEventArgs
         {
             var eType = typeof(T);
-            if (!EventDictionary.TryGetValue(eType, out var e))
+            if (!_eventDictionary.TryGetValue(eType, out var e))
             {
                 return;
             }
@@ -57,11 +57,11 @@ namespace Runestone.AesirArchitecture
             var callback = (Action<T>)e - listener;
             if (callback == null)
             {
-                EventDictionary.Remove(eType);
+                _eventDictionary.Remove(eType);
             }
             else
             {
-                EventDictionary[eType] = callback;
+                _eventDictionary[eType] = callback;
             }
 
             OnEventRegistrationsChanged?.Invoke();
@@ -72,7 +72,7 @@ namespace Runestone.AesirArchitecture
         /// </summary>
         public void InvokeEvent<T>(T args) where T : IEventArgs
         {
-            if (EventDictionary.TryGetValue(typeof(T), out var e))
+            if (_eventDictionary.TryGetValue(typeof(T), out var e))
             {
                 ((Action<T>)e)?.Invoke(args);
             }
@@ -83,12 +83,7 @@ namespace Runestone.AesirArchitecture
         /// </summary>
         public void Clear()
         {
-            foreach (var e in EventDictionary.Values)
-            {
-                (e as IDisposable)?.Dispose();
-            }
-
-            EventDictionary.Clear();
+            _eventDictionary.Clear();
             OnEventRegistrationsChanged?.Invoke();
         }
     }
