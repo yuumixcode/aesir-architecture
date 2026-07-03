@@ -1,0 +1,103 @@
+using System;
+using System.Threading.Tasks;
+
+namespace Runestone.AesirArchitecture
+{
+    /// <summary>
+    /// 能力扩展方法集合
+    /// </summary>
+    public static class CapabilityExtensions
+    {
+        /// <summary>
+        /// 获取已注册的 Model。若未注册则抛出包含调用者和目标类型信息的异常。
+        /// </summary>
+        public static T GetModel<T>(this ICanGetModel self) where T : class, IModel
+        {
+            var model = self.Context.GetModel<T>();
+            if (model == null)
+            {
+                throw new InvalidOperationException(
+                    $"{AesirArchitectureLog.ErrorTag} [{self.GetType().Name}] 尝试获取 Model [{typeof(T).Name}]，" +
+                    $"但该 Model 未在 Context 中注册。请确认已在 Configure() 中调用 RegisterModel<{typeof(T).Name}>()。");
+            }
+
+            return model;
+        }
+
+        /// <summary>
+        /// 获取已注册的 Service。若未注册则抛出包含调用者和目标类型信息的异常。
+        /// </summary>
+        public static T GetService<T>(this ICanGetService self) where T : class, IService
+        {
+            var service = self.Context.GetService<T>();
+            if (service == null)
+            {
+                throw new InvalidOperationException(
+                    $"{AesirArchitectureLog.ErrorTag} [{self.GetType().Name}] 尝试获取 Service [{typeof(T).Name}]，" +
+                    $"但该 Service 未在 Context 中注册。请确认已在 Configure() 中调用 RegisterService<{typeof(T).Name}>()。");
+            }
+
+            return service;
+        }
+
+        /// <summary>
+        /// 通过上下文事件总线注册事件监听，返回可自动移除的监听句柄
+        /// </summary>
+        public static AutoRemoveListenerHandle AddListener<T>(this ICanAddListener self, Action<T> onEvent)
+            where T : IEventArgs =>
+            self.Context.AddListener(onEvent);
+
+        /// <summary>
+        /// 通过上下文事件总线移除事件监听
+        /// </summary>
+        public static void RemoveListener<T>(this ICanAddListener self, Action<T> onEvent)
+            where T : IEventArgs =>
+            self.Context.RemoveListener(onEvent);
+
+        /// <summary>
+        /// 通过上下文事件总线发布事件
+        /// </summary>
+        public static void InvokeEvent<T>(this ICanInvokeEvent self, T e) where T : IEventArgs =>
+            self.Context.InvokeEvent(e);
+
+        /// <summary>
+        /// 执行带参命令
+        /// </summary>
+        public static void ExecuteCommand<T>(this ICanExecuteCommand self, T command) where T : ICommand
+        {
+            command.SetContext(self.Context);
+            command.Execute();
+        }
+
+        /// <summary>
+        /// 执行无参命令
+        /// </summary>
+        public static void ExecuteCommand<T>(this ICanExecuteCommand self) where T : ICommand, new()
+        {
+            var command = new T();
+            command.SetContext(self.Context);
+            command.Execute();
+        }
+
+        /// <summary>
+        /// 异步执行无参命令
+        /// </summary>
+        public static async Task ExecuteCommandAsync<T>(this ICanExecuteCommand self)
+            where T : IAsyncCommand, new()
+        {
+            var command = new T();
+            command.SetContext(self.Context);
+            await command.ExecuteAsync();
+        }
+
+        /// <summary>
+        /// 异步执行带参命令
+        /// </summary>
+        public static async Task ExecuteCommandAsync<T>(this ICanExecuteCommand self, T command)
+            where T : IAsyncCommand
+        {
+            command.SetContext(self.Context);
+            await command.ExecuteAsync();
+        }
+    }
+}
