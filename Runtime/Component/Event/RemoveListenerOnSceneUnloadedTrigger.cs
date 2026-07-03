@@ -13,6 +13,11 @@ namespace Runestone.AesirArchitecture
     {
         static RemoveListenerOnSceneUnloadedTrigger _instance;
 
+        static RemoveListenerOnSceneUnloadedTrigger()
+        {
+            GenericResetStaticsAssistant.Register(() => _instance = null);
+        }
+
         readonly Dictionary<string, RemoveListenerHandleCollection> _sceneHandles =
             new Dictionary<string, RemoveListenerHandleCollection>();
 
