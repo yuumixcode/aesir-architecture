@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Runestone.AesirArchitecture
 {
     /// <summary>
@@ -11,6 +8,5 @@ namespace Runestone.AesirArchitecture
     /// </summary>
     public interface IModel : IContextHolder, ICanSetContext, ICanGetModel, ICanInvokeEvent, ICanInitialize
     {
-        HashSet<Type> GetDependencies();
     }
 }

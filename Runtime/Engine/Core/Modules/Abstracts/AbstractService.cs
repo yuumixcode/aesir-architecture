@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace Runestone.AesirArchitecture
 {
@@ -12,11 +11,6 @@ namespace Runestone.AesirArchitecture
         IContext _context;
         IContext IContextHolder.Context => _context;
         void ICanSetContext.SetContext(IContext context) => _context = context;
-
-        /// <summary>
-        /// 获取依赖模块列表，子类可覆写。依赖项必须是 <see cref="IModel" /> 或 <see cref="IService" /> 的子类。
-        /// </summary>
-        public virtual HashSet<Type> GetDependencies() => null;
 
         /// <summary>
         /// 是否已初始化（只读）

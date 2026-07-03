@@ -44,8 +44,6 @@ namespace Runestone.AesirArchitecture
         /// </summary>
         public void RegisterModel<TModel>(TModel model) where TModel : class, IModel
         {
-            ContextDependencyAssistant.ValidateModelDependencyTypes<TModel>(model.GetDependencies());
-
             if (_modelLocator.TryGet<TModel>(out var existing))
             {
                 existing.Dispose();
@@ -59,21 +57,15 @@ namespace Runestone.AesirArchitecture
                 return;
             }
 
-            ContextDependencyAssistant.CheckModelDependencies(typeof(TModel), model.GetDependencies(),
-                _modelLocator);
             model.Initialize();
-            ContextBoard.Instance.AddContext(this);
         }
 
         /// <summary>
         /// 注册 Service 并绑定上下文。
-        /// <para>校验依赖集合（仅允许 IModel 和 IService）后设置上下文并注册。若上下文已完成统一初始化，检查依赖项是否全部已初始化并立即初始化。</para>
-        /// <para>若该类型已注册，旧实例会被 <see cref="Dispose" /> 后再覆盖，避免资源泄漏。</para>
+        /// <para>若上下文已完成统一初始化，则立即初始化该 Service。若该类型已注册，旧实例会被 <see cref="Dispose" /> 后再覆盖，避免资源泄漏。</para>
         /// </summary>
         public void RegisterService<TService>(TService service) where TService : class, IService
         {
-            ContextDependencyAssistant.ValidateServiceDependencyTypes<TService>(service.GetDependencies());
-
             if (_serviceLocator.TryGet<TService>(out var existing))
             {
                 existing.Dispose();
@@ -87,10 +79,7 @@ namespace Runestone.AesirArchitecture
                 return;
             }
 
-            ContextDependencyAssistant.CheckServiceDependencies(typeof(TService), service.GetDependencies(),
-                _modelLocator, _serviceLocator);
             service.Initialize();
-            ContextBoard.Instance.AddContext(this);
         }
 
         /// <summary>
@@ -163,7 +152,7 @@ namespace Runestone.AesirArchitecture
 
         /// <summary>
         /// 统一初始化。调用 <see cref="Configure" /> 注册模块后，按注册顺序依次初始化 Model 和 Service。
-        /// <para>开发者需保证注册顺序满足依赖关系——被依赖的模块先注册。初始化每个模块前检查其依赖项是否已初始化，未初始化则直接报错。</para>
+        /// <para>开发者需保证注册顺序满足依赖关系——被依赖的模块先注册。运行时通过 <c>GetModel</c> / <c>GetService</c> 获取未注册模块会抛出异常。</para>
         /// </summary>
         public void Initialize()
         {
@@ -176,15 +165,11 @@ namespace Runestone.AesirArchitecture
 
             foreach (var model in _modelLocator.GetAll())
             {
-                ContextDependencyAssistant.CheckModelDependencies(model.GetType(), model.GetDependencies(),
-                    _modelLocator);
                 model.Initialize();
             }
 
             foreach (var service in _serviceLocator.GetAll())
             {
-                ContextDependencyAssistant.CheckServiceDependencies(service.GetType(),
-                    service.GetDependencies(), _modelLocator, _serviceLocator);
                 service.Initialize();
             }
 
