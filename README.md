@@ -3,7 +3,7 @@
 > 面向团结引擎 / Unity 的渐进式 MVP 架构框架，以 Unity 原生特性为一等公民。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
-[![Version](https://img.shields.io/badge/version-0.2.1-blue.svg)](./CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.3.1-blue.svg)](./CHANGELOG.md)
 [![Unity](https://img.shields.io/badge/Unity-2022.3%2B-black.svg)](https://unity.com/)
 
 ## 概述
@@ -17,11 +17,11 @@ AesirArchitecture（RAA）是一个以 **Unity 原生优先** 为核心理念的
 - **命令模式** — `ICommand` / `IAsyncCommand` 负责写操作，支持同步与异步
 - **ObservableValue 响应式属性** — Model 持有可写实例，View 通过 `IReadOnlyObservableValue<out T>` 协变只读访问，保障层级安全
 - **MiniEventBus 类型事件总线** — 按事件类型注册/发布，支持自动移除监听句柄与多种生命周期绑定（GameObject 销毁、场景卸载等）
-- **依赖声明与校验** — `IModel` / `IService` 通过 `GetDependencies()` 声明依赖，注册时自动校验初始化顺序
+- **运行时错误日志** — `GetModel<T>()` / `GetService<T>()` 在目标未注册时抛出含调用者类型和目标类型信息的异常，替代前置依赖校验，兼容运行时替换 Model 的调试模式
+- **AbstractSubmodule 统一子模块生命周期** — Model 和 Service 的公共生命周期逻辑提取到 `AbstractSubmodule` 基类，消除代码重复
 - **GenericLocator 泛型定位器** — 按类型注册/查询的通用定位器，替代旧版 Container，支持全局单例
-- **Inspector 可视化看板** — `ContextBoard` 展示上下文模块列表，`MiniEventBusBoard` 展示事件注册状态
 - **Domain Reload 安全** — 静态变量通过 `[RuntimeInitializeOnLoadMethod]` 显式重置，反复进出 Play Mode 无残留
-- **纯 C# 核心 + MonoBehaviour 适配** — 框架核心为纯 C# 对象，`AesirView<T>` / `MonoView<T>` 作为 MonoBehaviour 适配层
+- **纯 C# 核心 + MonoBehaviour 适配** — 框架核心为纯 C# 对象，Engine 层不依赖任何 Component 层类型，`AesirView<T>` / `MonoView<T>` / `AesirViewController<T>` 作为 MonoBehaviour 适配层
 - **MVC + MVP 双模式** — `IController` 适合快速开发，`IPresenter` 提供更严格的 Model-View 隔离
 
 ### 与 QFramework 的差异
@@ -34,7 +34,7 @@ AesirArchitecture（RAA）是一个以 **Unity 原生优先** 为核心理念的
 | 事件通信 | 纯 C# TypeEvent | 纯 C# MiniEventBus + 委托（不使用 `event` 关键字） |
 | 日志 | `Debug.Log` | `AesirArchitectureLog` 条件编译统一日志 |
 | 静态状态 | 无 Domain Reset 保障 | `[RuntimeInitializeOnLoadMethod]` 显式重置 |
-| 表现层 | 无明确抽象 | `IView` 只读契约 + `IController` / `IPresenter` 双模式 |
+| 表现层 | 无明确抽象 | `IView` 表现层接口 + `IController` / `IPresenter` 双模式 |
 
 ## 安装
 
@@ -165,21 +165,19 @@ this.InvokeEvent(new ScoreChangedEvent { NewScore = 100 });
 │  ┌──────────────────────────────────────────────┐│
 │  │       GenericLocator<T> (类型定位器)         ││
 │  └──────────────────────────────────────────────┘│
-│  ┌──────────────────────────────────────────────┐│
-│  │    ContextBoard / MiniEventBusBoard (可视化) ││
-│  └──────────────────────────────────────────────┘│
 └──────────────────┬──────────────────────────────┘
                    │ 能力接口组合
      ┌─────────────┼─────────────┐
      ▼             ▼             ▼
 ┌─────────┐ ┌───────────┐ ┌────────────┐
 │  IView  │ │IController│ │ IPresenter │
-│ (只读)  │ │  (MVC)    │ │   (MVP)    │
+│         │ │  (MVC)    │ │   (MVP)    │
 └─────────┘ └───────────┘ └────────────┘
      │             │             │
      ▼             ▼             ▼
 ┌──────────────────────────────────────┐
-│   AesirView<T> / MonoView<T>         │
+│  AesirView<T> / MonoView<T>          │
+│  AesirViewController<T>              │
 │        (MonoBehaviour 适配层)          │
 └──────────────────────────────────────┘
                    │
@@ -195,9 +193,9 @@ this.InvokeEvent(new ScoreChangedEvent { NewScore = 100 });
 | 模块 | GetModel | GetService | ExecuteCommand | AddListener | InvokeEvent | Initialize | Dispose |
 |------|:--------:|:---------:|:--------------:|:---------:|:----------:|:----------:|:-------:|
 | **IModel** | ✓ | | | | ✓ | ✓ | ✓ |
-| **IService** | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| **IService** | ✓ | ✓ | | ✓ | ✓ | ✓ | ✓ |
 | **IView** | ✓ | ✓ | | ✓ | ✓ | | |
-| **IController** | ✓ | ✓ | ✓ | ✓ | | | |
+| **IController** | ✓ | ✓ | ✓ | | | | |
 | **IPresenter** | ✓ | ✓ | ✓ | ✓ | ✓ | | ✓ |
 
 ## 项目结构
@@ -216,18 +214,16 @@ cn.runestone.aesir.architecture/
 │   │   │   ├── AesirArchitectureLog.cs         # 统一日志
 │   │   │   ├── AesirArchitecturePlayerLoop.cs  # PlayerLoop 注入
 │   │   │   ├── AssemblyInfo.cs                 # InternalsVisibleTo 声明
-│   │   │   └── GenericResetStaticsAssistant.cs # 静态变量重置助手
+│   │   │   └── ResetStaticsAssistant.cs        # 静态变量重置助手
 │   │   ├── Core/
-│   │   │   ├── Context/           # IContext, AbstractContext<T>, ContextDependencyAssistant
+│   │   │   ├── Context/           # IContext, AbstractContext<T>
 │   │   │   ├── Modules/           # IModel, IService, IView, IController, IPresenter + Abstract 基类
 │   │   │   │   ├── Interfaces/    # 模块接口
-│   │   │   │   └── Abstracts/     # 模块抽象基类
-│   │   │   └── Capabilities/      # ICan* 能力标记接口 + Extension 方法
-│   │   │       ├── Interfaces/
-│   │   │       └── Extensions/
+│   │   │   │   └── Abstracts/     # AbstractSubmodule, AbstractModel, AbstractService
+│   │   │   └── Capabilities/      # Capabilities.cs (ICan* 接口) + CapabilityExtensions.cs (扩展方法)
 │   │   ├── Event/                 # MiniEventBus, MiniEvent<T>, AutoRemoveListenerHandle
 │   │   ├── Observable/           # ObservableValue<T>, IReadOnlyObservableValue<T>
-│   │   ├── Locator/              # GenericLocator<T>, ILocator
+│   │   ├── Locator/              # GenericLocator<T>, IGenericLocator<T>
 │   │   └── Utilities/            # PlayerLoopUtility
 │   ├── Component/                # MonoBehaviour 组件（依赖 MonoBehaviour）
 │   │   ├── Common/
@@ -236,9 +232,8 @@ cn.runestone.aesir.architecture/
 │   │   ├── Core/
 │   │   │   ├── AesirView.cs              # Odin 适配 View 基类
 │   │   │   ├── MonoView.cs               # 纯 MonoBehaviour View 基类
-│   │   │   └── ContextBoard.cs           # 上下文 Inspector 可视化看板
+│   │   │   └── AesirViewController.cs    # View + Controller 双角色基类
 │   │   ├── Event/
-│   │   │   ├── MiniEventBusBoard.cs      # 事件总线 Inspector 可视化看板
 │   │   │   ├── RemoveListenerTrigger.cs  # 自动移除监听触发器基类
 │   │   │   ├── RemoveListenerOnDestroyTrigger.cs
 │   │   │   ├── RemoveListenerOnDisableTrigger.cs
@@ -291,8 +286,9 @@ cn.runestone.aesir.architecture/
 - [x] ObservableValue 响应式属性
 - [x] MiniEventBus 类型事件总线
 - [x] GenericLocator 泛型定位器
-- [x] 依赖声明与校验机制
-- [x] Inspector 可视化看板（ContextBoard / MiniEventBusBoard）
+- [x] AbstractSubmodule 统一子模块生命周期
+- [x] 运行时错误日志（替代前置依赖校验）
+- [x] Engine 层脱离 Component 层（纯 C#）
 - [x] Domain Reload 安全
 - [ ] ScriptableObject 可视化配置层
 - [ ] SO EventChannel 事件通道

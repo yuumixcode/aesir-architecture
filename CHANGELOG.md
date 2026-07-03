@@ -14,6 +14,16 @@
 - Editor 工具链（SO Inspector / MVP 脚手架 / 模块可视化）
 - 运行时集合（RuntimeSet）
 
+## [0.3.1] - 2026-07-03
+
+### Added
+
+- **AesirViewController\<T\>** — View + Controller 双角色合一的 MonoBehaviour 基类，自动绑定对应 Context 类型的接口实例，简化 MVC 模式下的 View 搭建
+
+### Changed
+
+- **IController 移除 ICanAddListener** — Controller 定位为命令执行入口，不应被动监听事件。事件监听应由 Service 或 View 负责。能力矩阵同步更新
+
 ## [0.3.0] - 2026-07-03
 
 ### Changed
